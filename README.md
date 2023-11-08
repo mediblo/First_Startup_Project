@@ -1,7 +1,7 @@
 ## 창업 프로젝트 1 [ STREAM ]
 ## STREAM이란?
 전자 소프트웨어 유통망 [ Electronic Software Distribution ]을 C언어로 조금이나마 구현한 프로그램이다.
-## [ESD란?](https://namu.wiki/w/%EC%A0%84%EC%9E%90%20%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4%20%EC%9C%A0%ED%86%B5%EB%A7%9D "출처 : 나무위키")
+## [ESD란?](https://namu.wiki/w/%EC%A0%84%EC%9E%90%20%EC%86%8C%ED%94%84%ED%8A%B8%EC%9B%A8%EC%96%B4%20%EC%9C%A0%ED%86%B5%EB%A7%9D#s-2 "출처 : 나무위키")
 전자기기용 소프트웨어의 판매 방식은 그 소프트웨어를 고객이 원하는 전자장치에 집어놓을 수 있도록 운송책을 마련하고 그 운송책을 고객에게 파는 것
 ## 제작 계기?
 - 접근성이 좋은 ESD가 없다!

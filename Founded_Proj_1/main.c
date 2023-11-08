@@ -46,6 +46,9 @@ int main() {
 		system("cls");
 	} while (page != -10);
 	draw_quit();
+	
+	free_user();
+	free_seller();
 
 	return 0;
 }

@@ -69,6 +69,9 @@ void update_user_money(short UID, int money, bool op);
 void change_pw(char* pw, short ID, void(*func)(char* pw));
 void change_pw_user(char* pw, short UID);
 void change_pw_seller(char* pw, short SID);
+// 메모리 할당 해제 함수
+void free_user();
+void free_seller();
 
 // 에러 코드 처리 함수
 // 입력 : 에러 코드

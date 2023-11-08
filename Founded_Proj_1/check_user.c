@@ -35,7 +35,6 @@ int is_user(Account ac, short type) {
 			else return 0;
 		}
 	}
-	if (root_user == NULL) return 0;
 	return -1;
 }
 

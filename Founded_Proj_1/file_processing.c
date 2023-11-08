@@ -13,6 +13,8 @@
 // 전역 변수 모음
 short UID_count = 0;
 short SID_count = 0;
+short UID_max = 0;
+short SID_max = 0;
 User * root_user = NULL;
 Seller * root_seller = NULL;
 App * root_app = NULL;
@@ -65,7 +67,7 @@ void insert_seller(char* id, char* pw, char* nickname, short question, char* ans
 	temp->money = 0;
 	temp->lang = set_language;
 	temp->next = NULL;
-	temp->SID = UID_count++;
+	temp->SID = SID_count++;
 
 	if (root_seller == NULL) root_seller = temp;
 	else {
@@ -80,11 +82,12 @@ void delete_call(short ID, void(*func)(short ID)) { func(ID); }
 void delete_user(short UID) {
 	User* prev = root_user;
 
-	for (User* temp = root_user; temp == NULL; temp = temp->next) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID) {
 			prev->next = temp->next;
 			free(temp);
-			save_user_file();
+			if (--UID_count != 0) save_user_file();
+			else root_user = NULL;
 			return;
 		}
 		prev = temp;
@@ -94,11 +97,12 @@ void delete_user(short UID) {
 void delete_seller(short SID) {
 	Seller* prev = root_seller;
 
-	for (Seller* temp = root_seller; temp == NULL; temp = temp->next) {
+	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
 		if (temp->SID == SID) {
 			prev->next = temp->next;
 			free(temp);
-			save_seller_file();
+			if (--SID_count != 0)save_seller_file();
+			else root_seller = NULL;
 			return;
 		}
 		prev = temp;
@@ -117,7 +121,10 @@ void update_user(short UID, char* nickname, short question, char* answer, bool l
 			temp->question = question;
 			strcpy(temp->answer, answer);
 			temp->lang = lang;
+			UID_count--;
 			save_user_file();
+			save_proj_file();
+			root_user = NULL;
 			return;
 		}
 	}
@@ -187,28 +194,26 @@ void save_user_file() {
 }
 void read_user_file() {
 	FILE* fp = NULL;
-	User* temp = root_user;
-	bool flag = TRUE;
+	User* temp = NULL; // 데이터를 받을 더미
+	User** temp_root = &root_user; // 루트에 연결할 더미
 
 	if ((fp = fopen("data/user.bin", "rb")) == NULL) {
 		save_user_file();
 		error(101);
 	}
 	else {
-		do{
-			fread(temp, sizeof(User), 1, fp);
-
-			if (flag) {
-				root_user = temp;
-				flag = FALSE;
+		while(1){
+			temp = (User*)malloc(sizeof(User)); // 데이터 입력 받기 전 메모리 할당 [ 안하면 메모리 없는거! ]
+			if (fread(temp, sizeof(User), 1, fp) != 1) { // 데이터 입력이 정상인지 판별
+				if(temp != NULL) free(temp); // NULL일 때 free하면 메모리 누수가 일어난다.
+				break; // 다 읽었으면 끝내
 			}
-			temp = temp->next;
-		} while (temp != NULL);
+			*temp_root = temp; // 데이터를 읽고
+			temp_root = &temp->next; // 다음 주소로 이동
+		} 
 		fclose(fp);
 	}
-
 }
-
 void save_proj_file() {
 	FILE* fp = NULL;
 	Proj_setting proj;
@@ -259,8 +264,8 @@ void save_seller_file() {
 }
 void read_seller_file() {
 	FILE* fp = NULL;
-	User* temp = root_seller;
-	bool flag = TRUE;
+	Seller* temp = NULL;
+	Seller** temp_root = &root_seller;
 
 	if ((fp = fopen("data/seller.bin", "rb")) == NULL) {
 		
@@ -268,14 +273,30 @@ void read_seller_file() {
 		error(105);
 	}
 	else {
-		while (temp != NULL) {
-			fread(temp, sizeof(temp), 1, fp);
-			if (flag == TRUE) {
-				root_seller = temp;
-				flag = FALSE;
+		while (1) {
+			temp = (Seller*)malloc(sizeof(Seller));
+			if (fread(temp, sizeof(Seller), 1, fp) != 1) {
+				if (temp != NULL) free(temp);
+				break;
 			}
-			temp = temp->next;
+			*temp_root = temp;
+			temp_root = &temp->next;
 		}
 		fclose(fp);
+	}
+}
+///////////////////
+void free_user() {
+	while (root_user != NULL) {
+		User* temp = root_user;
+		root_user = root_user->next;
+		free(temp);
+	}
+}
+void free_seller() {
+	while (root_seller != NULL) {
+		User* temp = root_seller;
+		root_seller = root_seller->next;
+		free(temp);
 	}
 }

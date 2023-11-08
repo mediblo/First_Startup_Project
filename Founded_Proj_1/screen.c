@@ -19,6 +19,7 @@ void draw_seller_page();
 void draw_button(Point p, char* str);
 void draw_quit();
 int popup_Explantion(char* msg);
+void warning_memonry();
 
 void draw_box() {
 	for (int y = 0; y < Y_MAX; y++) {
@@ -32,6 +33,7 @@ void draw_box() {
 			else if (x == 1 || x == X_MAX - 1) printf("│");
 		}
 	}
+	warning_memonry();
 }
 
 void draw_title(const char title_name[]) {
@@ -235,4 +237,17 @@ int popup_Explantion(char* msg) {
 		}
 	}
 	error(7);
+}
+
+void warning_memonry() {
+	char* msg_kor = "[메모리 누수 방지를 위해 반드시 종료를 눌러 종료해주시기 바랍니다]";
+	char* msg_eng = "[You must select exit button and close program to prevent memory leak]";
+
+	Point p = { 0,0 };
+
+	p.x = X_MAX/2 - (strlen(set_language ? msg_kor : msg_eng) / 2);
+	p.y = Y_MAX - 3;
+
+	gotoxy(p.x, p.y);
+	choice_color(red, black, set_language ? msg_kor : msg_eng);
 }
