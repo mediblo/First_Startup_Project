@@ -12,9 +12,12 @@ int main() {
 	bool flag = TRUE;
 	PNS pns;
 
+	make_temp_folder();
 	read_proj_file();
-	if (UID_count != 0)read_user_file();
-	if (SID_count != 0)read_seller_file();
+	if (UID_count != 0)read_user_file(); // NULL 읽기 방지
+	if (SID_count != 0)read_seller_file(); // NULL 읽기 방지
+	if (AID_count != 0)read_application_file(); // NULL 읽기 방지
+
 	do {
 		
 		if (flag) {
@@ -34,8 +37,10 @@ int main() {
 				page = my_page(pns.id);
 				break;
 			case 1:
+				page = library_page(pns.id);
 				break;
 			case 2:
+				page = shop_page(pns.id);
 				break;
 			}
 		}
@@ -47,8 +52,7 @@ int main() {
 	} while (page != -10);
 	draw_quit();
 	
-	free_user();
-	free_seller();
+	free_all();
 
 	return 0;
 }

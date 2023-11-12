@@ -37,14 +37,12 @@ int is_user(Account ac, short type) {
 	}
 	return -1;
 }
-
 bool is_new_user(char* id) {
 	if (root_user == NULL) return TRUE;
 	for (User* temp = root_user; temp != NULL; temp = temp->next)
 		if (strcmp(temp->id, id) == 0) return FALSE;
 	return TRUE;
 }
-
 int is_exit_id(char* id, short quest, char* answer) {
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (strcmp(temp->id, id) == 0 && temp->question == quest && strcmp(temp->answer, answer) == 0)
@@ -52,7 +50,6 @@ int is_exit_id(char* id, short quest, char* answer) {
 	}
 	return -1;
 }
-
 int get_UID(Account ac) {
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (strcmp(temp->id, ac.id) == 0 && temp->password == make_pw_num(ac.password))
@@ -60,7 +57,6 @@ int get_UID(Account ac) {
 	}
 	// 에러 처리
 }
-
 int check_pw(short UID, char* pw) {
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID && temp->password == make_pw_num(pw))
@@ -68,15 +64,17 @@ int check_pw(short UID, char* pw) {
 	}
 	return 0;
 }
-
 User* get_data(short UID) {
 	for (User* temp = root_user; temp != NULL; temp = temp->next)
 		if (temp->UID == UID) return temp;
 	// 에러 처리
 }
-
+int get_money(short UID) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next)
+		if (temp->UID == UID) return temp->money;
+	// 에러 처리
+}
 ///////////////////////////판매자 버전 함수들////////////
-
 int is_seller(Account ac, short type) {
 	if (type != 1) return -2;
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
@@ -89,7 +87,6 @@ int is_seller(Account ac, short type) {
 	}
 	return -1;
 }
-
 bool is_new_seller(char* id) {
 	if (root_seller == NULL) return TRUE;
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
@@ -104,7 +101,6 @@ int is_exit_id_seller(char* id, int quest, char* answer) {
 	}
 	return -1;
 }
-
 int get_SID(Account ac) {
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
 		if (strcmp(temp->id, ac.id) == 0 && temp->password == make_pw_num(ac.password))
@@ -112,14 +108,12 @@ int get_SID(Account ac) {
 	}
 	// 에러 처리
 }
-
 int check_pw_seller(short SID, char* pw) {
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
 		if (temp->SID == SID && temp->password == make_pw_num(pw)) return 1;
 	}
 	return 0;
 }
-
 Seller* get_data_seller(short SID) {
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next)
 		if (temp->SID == SID) return temp;

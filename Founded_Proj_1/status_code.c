@@ -5,6 +5,7 @@
 // 100번대 - 파일 부분 오류
 
 void error(int code) {
+	free_all();
 	system("cls");
 	switch (code) {
 		case 2:
@@ -38,6 +39,15 @@ void error(int code) {
 			break;
 		case 105:
 			printf("seller.bin 읽기 오류");
+			break;
+		case 106:
+			printf("application.bin 제작 or data폴더 없음 오류");
+			break;
+		case 107:
+			printf("application.bin 읽기 오류");
+			break;
+		case 108:
+			printf("저장 폴더 없음");
 			break;
 		default:
 			printf("다른 인위적 에러");

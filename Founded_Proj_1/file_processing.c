@@ -13,8 +13,10 @@
 // 전역 변수 모음
 short UID_count = 0;
 short SID_count = 0;
+short AID_count = 0;
 short UID_max = 0;
 short SID_max = 0;
+short AID_max = 0;
 User * root_user = NULL;
 Seller * root_seller = NULL;
 App * root_app = NULL;
@@ -28,6 +30,10 @@ void save_proj_file();
 void read_proj_file();
 void save_seller_file();
 void read_seller_file();
+void save_application_file();
+void read_application_file();
+///////////////////
+void update_seller_aCount(short SID, bool op);
 ///////////////////
 void insert_call(char* id, char* pw, char* nickname, short question, char* answer,
 	void(*func)(char* id, char* pw, char* nickname, short question, char* answer)) {
@@ -45,7 +51,8 @@ void insert_user(char* id, char* pw, char* nickname, short question, char* answe
 	temp->money = 0;
 	temp->lang = set_language;
 	temp->next = NULL;
-	temp->UID = UID_count++;
+	temp->UID = UID_max++;
+	UID_count++;
 
 	if (root_user == NULL) root_user = temp;
 	else {
@@ -67,7 +74,8 @@ void insert_seller(char* id, char* pw, char* nickname, short question, char* ans
 	temp->money = 0;
 	temp->lang = set_language;
 	temp->next = NULL;
-	temp->SID = SID_count++;
+	temp->SID = SID_max++;
+	SID_count++;
 
 	if (root_seller == NULL) root_seller = temp;
 	else {
@@ -75,6 +83,34 @@ void insert_seller(char* id, char* pw, char* nickname, short question, char* ans
 		root_seller = temp;
 	}
 	save_seller_file();
+	save_proj_file();
+}
+void insert_application(
+	char* k_name, char* e_name, char* k_exp, char* e_exp,
+	wchar_t* url, char genre, char extension,
+	short SID, int price, char lang_set) {
+	App* temp = (App*)malloc(sizeof(App));
+	strcpy(temp->kor_name, k_name);
+	strcpy(temp->eng_name, e_name);
+	strcpy(temp->kor_explanation, k_exp);
+	strcpy(temp->eng_explanation, e_exp);
+	strcpy(temp->url, url);
+	temp->genre = genre;
+	temp->extension = extension;
+	temp->SID = SID;
+	temp->price = price;
+	temp->lang_set = lang_set;
+	temp->next = NULL;
+	temp->AID = AID_max++;
+	AID_count++;
+	update_seller_aCount(SID, true);
+
+	if (root_app == NULL) root_app = temp;
+	else {
+		temp->next = root_app;
+		root_app = temp;
+	}
+	save_application_file();
 	save_proj_file();
 }
 ///////////////////
@@ -109,29 +145,41 @@ void delete_seller(short SID) {
 	}
 	// 에러 처리
 }
+void delete_application(short AID) {
+	App* prev = root_app;
+
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			prev->next = temp->next;
+			free(temp);
+			if (--AID_count != 0)save_application_file();
+			else root_app = NULL;
+			return;
+		}
+		prev = temp;
+	}
+	// 에러 처리
+}
 ///////////////////
 void update_call(short ID, char* nickname, short question, char* answer, bool lang,
 	void(*func)(short ID, char* nickname, short question, char* answer, bool lang)) {
 	func(ID, nickname, question, answer, lang);
 }
 void update_user(short UID, char* nickname, short question, char* answer, bool lang) {
-	for (User* temp = root_user; temp == NULL; temp = temp->next) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID) {
 			strcpy(temp->nickname, nickname);
 			temp->question = question;
 			strcpy(temp->answer, answer);
 			temp->lang = lang;
-			UID_count--;
 			save_user_file();
-			save_proj_file();
-			root_user = NULL;
 			return;
 		}
 	}
 	// 에러 처리
 }
 void update_seller(short SID, char* nickname, short question, char* answer, bool lang) {
-	for (Seller* temp = root_seller; temp == NULL; temp = temp->next) {
+	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
 		if (temp->SID == SID) {
 			strcpy(temp->nickname, nickname);
 			temp->question = question;
@@ -145,11 +193,22 @@ void update_seller(short SID, char* nickname, short question, char* answer, bool
 }
 ///////////////////
 void update_user_money(short UID, int money, bool op) {
-	for (User* temp = root_user; temp == NULL; temp = temp->next) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID) {
 			if (op) temp->money += money;
 			else temp->money -= money;
 			save_user_file();
+			return;
+		}
+	}
+	// 에러 처리
+}
+void update_seller_aCount(short SID, bool op) {
+	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
+		if (temp->SID == SID) {
+			if (op) temp->prog_count++;
+			else temp->prog_count--;
+			save_seller_file();
 			return;
 		}
 	}
@@ -218,8 +277,12 @@ void save_proj_file() {
 	FILE* fp = NULL;
 	Proj_setting proj;
 
-	proj.max_uid = UID_count;
-	proj.max_sid = SID_count;
+	proj.count_uid = UID_count;
+	proj.count_sid = SID_count;
+	proj.count_aid = AID_count;
+	proj.max_uid = UID_max;
+	proj.max_sid = SID_max;
+	proj.max_aid = AID_max;
 
 	if ((fp = fopen("data/proj.bin", "wb")) == NULL) {
 		system("mkdir data");
@@ -236,6 +299,8 @@ void read_proj_file() {
 
 	if ((fp = fopen("data/proj.bin", "rb")) == NULL) {
 		save_proj_file();
+		strcpy(proj.admin.id, "asdf");
+		proj.admin.password = make_pw_num("1111");
 		error(103);
 	}
 	else {
@@ -243,8 +308,12 @@ void read_proj_file() {
 		fclose(fp);
 	}
 	
-	UID_count = proj.max_uid;
-	SID_count = proj.max_sid;
+	UID_count = proj.count_uid;
+	SID_count = proj.count_sid;
+	AID_count = proj.count_aid;
+	UID_max = proj.max_uid;
+	SID_max = proj.max_sid;
+	AID_max = proj.max_aid;
 }
 void save_seller_file() {
 	FILE* fp = NULL;
@@ -256,7 +325,7 @@ void save_seller_file() {
 	}
 	else {
 		while (temp != NULL) { 
-			fwrite(temp, sizeof(temp), 1, fp);
+			fwrite(temp, sizeof(Seller), 1, fp);
 			temp = temp->next;
 		}
 		fclose(fp);
@@ -285,6 +354,53 @@ void read_seller_file() {
 		fclose(fp);
 	}
 }
+void save_application_file() {
+	FILE* fp = NULL;
+	App* temp = root_app;
+
+	if ((fp = fopen("data/application.bin", "wb")) == NULL) {
+		system("mkdir data");
+		error(106);
+	}
+	else {
+		while (temp != NULL) {
+			fwrite(temp, sizeof(App), 1, fp);
+			temp = temp->next;
+		}
+		fclose(fp);
+	}
+}
+void read_application_file() {
+	FILE* fp = NULL;
+	App* temp = NULL; // 데이터를 받을 더미
+	App** temp_root = &root_app; // 루트에 연결할 더미
+
+	if ((fp = fopen("data/application.bin", "rb")) == NULL) {
+		save_application_file();
+		error(107);
+	}
+	else {
+		while (1) {
+			temp = (App*)malloc(sizeof(App)); // 데이터 입력 받기 전 메모리 할당 [ 안하면 메모리 없는거! ]
+			if (fread(temp, sizeof(App), 1, fp) != 1) { // 데이터 입력이 정상인지 판별
+				if (temp != NULL) free(temp); // NULL일 때 free하면 메모리 누수가 일어난다.
+				break; // 다 읽었으면 끝내
+			}
+			*temp_root = temp; // 데이터를 읽고
+			temp_root = &temp->next; // 다음 주소로 이동
+		}
+		fclose(fp);
+	}
+}
+void make_temp_folder() {
+	FILE* fp = NULL;
+
+	if ((fp = fopen("download/temp.txt", "wb")) == NULL) {
+		system("mkdir download");
+		error(108);
+	}
+	fclose(fp);
+}
 ///////////////////
 void free_user() {
 	while (root_user != NULL) {
@@ -299,4 +415,16 @@ void free_seller() {
 		root_seller = root_seller->next;
 		free(temp);
 	}
+}
+void free_application() {
+	while (root_app != NULL) {
+		User* temp = root_app;
+		root_app = root_app->next;
+		free(temp);
+	}
+}
+void free_all() {
+	free_user();
+	free_seller();
+	free_application();
 }

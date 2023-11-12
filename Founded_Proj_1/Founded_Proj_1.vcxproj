@@ -133,13 +133,15 @@
     <ClCompile Include="input.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="make_pw.c" />
-    <ClCompile Include="my_page.c" />
+    <ClCompile Include="user_library_page.c" />
+    <ClCompile Include="user_my_page.c" />
     <ClCompile Include="screen.c" />
     <ClCompile Include="first_title.c" />
     <ClCompile Include="seller_my_page.c" />
     <ClCompile Include="standard_func.c" />
     <ClCompile Include="status_code.c" />
     <ClCompile Include="URL_down.c" />
+    <ClCompile Include="user_shop_page.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source.h" />

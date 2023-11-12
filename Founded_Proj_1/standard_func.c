@@ -12,6 +12,7 @@ void gotoxy(int x, int y);
 void select_color(char* str);
 void choice_color(Color_num t_color, Color_num bg_color, char* str);
 void print_choice_lang(const char* kor, const char* eng, bool choice);
+void disable_color(char* str);
 
 void textcolor(Color_num foreground, Color_num background) {
     int color = foreground + (background << 4);
@@ -47,4 +48,12 @@ void print_choice_lang(const char* kor, const char* eng, bool choice) {
 		if (choice) select_color(eng);
 		else printf("%s", eng);
 	}
+}
+
+void disable_color(char* str) {
+	Color_num t_color = darkGray, bg_color = black;
+	textcolor(t_color, bg_color);
+	printf("%s", str);
+	t_color = white;
+	textcolor(t_color, bg_color);
 }

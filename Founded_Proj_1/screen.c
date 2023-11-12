@@ -18,8 +18,9 @@ void draw_page();
 void draw_seller_page();
 void draw_button(Point p, char* str);
 void draw_quit();
-int popup_Explantion(char* msg);
+bool popup_Explantion(char* msg);
 void warning_memonry();
+void draw_lil_box(Point p1, Point p2);
 
 void draw_box() {
 	for (int y = 0; y < Y_MAX; y++) {
@@ -178,7 +179,7 @@ void draw_quit() {
 	gotoxy(0,Y_MAX - 3);
 }
 
-int popup_Explantion(char* msg) {
+bool popup_Explantion(char* msg) {
 	system("cls");
 	draw_box();
 	draw_title(set_language ? "확인 팝업" : "Check Popup");
@@ -192,6 +193,8 @@ int popup_Explantion(char* msg) {
 
 	p.x = X_MAX / 2.5;
 	p.y = Y_MAX / 2 - 6;
+	Point p2 = { p.x + 19, p.y + 4 };
+	draw_lil_box(p, p2);
 	
 	gotoxy(p.x, p.y);
 	for (int i = 0; msg[i] !='\0'; i++) {
@@ -233,7 +236,7 @@ int popup_Explantion(char* msg) {
 				break;
 			case K_ENTER:
 				system("cls");
-				return select ? 1 : 0;
+				return select ? true : false;
 		}
 	}
 	error(7);
@@ -250,4 +253,20 @@ void warning_memonry() {
 
 	gotoxy(p.x, p.y);
 	choice_color(red, black, set_language ? msg_kor : msg_eng);
+}
+
+void draw_lil_box(Point p1, Point p2) {
+	p1.x -= 1, p1.y-=1;
+	p2.x += 2, p2.y += 2;
+	for (int y = p1.y; y < p2.y; y++) {
+		for (int x = p1.x; x < p2.x; x++) {
+			gotoxy(x, y);
+			if (x == p1.x && y == p1.y) printf("┌");
+			else if (x == p2.x-1 && y == p1.y) printf("┐");
+			else if (x == p1.x && y == p2.y-1) printf("└");
+			else if (x == p2.x-1 && y == p2.y-1) printf("┘");
+			else if (y == p1.y || y == p2.y-1) printf("─");
+			else if (x == p1.x || x == p2.x-1) printf("│");
+		}
+	}
 }

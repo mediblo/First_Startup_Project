@@ -65,7 +65,7 @@ typedef struct seller{
 // TYPE 3. 관리자 구조체
 typedef struct administrator{
 	char id[20];
-	char password[20];
+	int password;
 } Admin;
 
 // 프로그램 구조체
@@ -78,11 +78,18 @@ typedef struct application{
 	char genre; // 장르
 	char extension; // 확장자
 	short SID; // 판매자 고유 ID
-	short GID; // 프로그램 고유 ID
+	short AID; // 프로그램 고유 ID
 	int price; // 가격
 	char lang_set; // 지원 언어 [ 0 = 둘 다, 1 = 한국어, 2 = 영어 ]
 	struct application* next; // 연결리스트
 } App;
+
+typedef struct app_data {
+	char name[20]; // 프로그램 이름
+	char explanation[101]; // 프로그램 소개말
+	short AID; // 프로그램 고유 ID
+	int price; // 가격
+} AData;
 
 typedef struct review {
 	short UID; // 유저 고유 ID
@@ -94,8 +101,12 @@ typedef struct review {
 
 // 프로그램 내부 주요 정보 구조체
 typedef struct project_secret_setting{
+	short count_uid;
+	short count_sid;
+	short count_aid;
 	short max_uid;
 	short max_sid;
+	short max_aid;
 	Admin admin;
 } Proj_setting;
 
@@ -110,6 +121,10 @@ extern App* root_app; // 프로그램 전역변수
 extern Review* root_review; // 리뷰 전역변수
 extern short UID_count; // UID 카운트
 extern short SID_count; // SID 카운트
+extern short AID_count; // AID 카운트
+extern short UID_max; // UID 최대
+extern short SID_max; // SID 최대
+extern short AID_max; // AID 최대
 extern bool set_language; // 현재 언어 설정
 
 // 색깔 찾기 귀찮아서 만든 열거형
@@ -119,3 +134,16 @@ typedef enum {
 	lightGreen, lightCyan, lightRed, lightMagenta, yellow,
 	white
 } Color_num;
+
+/* 장르 목록
+game, vaccine, office, messenger
+DB, Graphics, education, Video
+Picture, Music, Text, etc
+*/
+
+/* 확장자 목록
+exe, zip, 7z, gif
+mp3, wav, mp4, avi
+png, jpg, pptx, xlex
+txt, hwp, doc, pdf
+*/

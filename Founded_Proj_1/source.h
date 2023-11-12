@@ -20,7 +20,9 @@ void draw_button(Point p, char* str);
 // 종료 출력 함수
 void draw_quit();
 // 설명문 팝업
-int popup_Explantion(char* msg);
+bool popup_Explantion(char* msg);
+// 작은 박스 그리는 함수
+void draw_lil_box(Point p1, Point p2);
 
 // 타이틀 선택 함수
 PNS select_title();
@@ -39,13 +41,24 @@ void select_color(char* str);
 void choice_color(Color_num t_color, Color_num bg_color, char* str);
 // 언어 및 선택 출력 함수
 void print_choice_lang(const char* kor, const char* eng, bool choice);
+// 글자 비활성화 함수
+void disable_color(char* str);
 
 // 입력 함수
 void input_some(const char str[], char some[]);
 // 공백 포함 입력 함수
-void input_blank_some(const char str[], char some[], int len_str);
+void input_blank_some(const char str[], char some[], rsize_t len_str);
+// URL만 받는 함수
+void input_only_url(const char str[], wchar_t some[], rsize_t len_str);
 // 질문 입력 함수
 int select_question(int old_select);
+// 장르 입력 함수
+int input_genre(int old_genre);
+// 확장자 입력 함수
+int input_extension(int old_extension);
+// 가격 입력 함수
+// 정수가 아닌 입력이 들어오면 -1 반환
+int set_money();
 
 // 회원가입 정보 저장 콜백 함수
 // insert_user = 유저 / insert_seller = 판매자
@@ -53,11 +66,12 @@ void insert_call(char* id, char* pw, char* nickname, short question, char* answe
 	void(*func)(char* id, char* pw, char* nickname, short question, char* answer));
 void insert_user(char* id, char* pw, char* nickname, short question, char* answer);
 void insert_seller(char* id, char* pw, char* nickname, short question, char* answer);
-// 회원 탈퇴 콜백 함수
-// delete_user = 유저 / delete_seller = 판매자
+// 연결 삭제 콜백 함수
+// delete_user = 유저 / delete_seller = 판매자 / delete_application = 프로그램
 void delete_call(short ID, void(*func)(short ID));
 void delete_user(short UID);
 void delete_seller(short SID);
+void delete_application(short AID);
 // 회원 정보 수정 콜백 함수
 // update_user = 유저 / update_seller = 판매자
 void update_call(short ID, char* nickname, short question, char* answer, bool lang,
@@ -70,8 +84,14 @@ void change_pw(char* pw, short ID, void(*func)(char* pw));
 void change_pw_user(char* pw, short UID);
 void change_pw_seller(char* pw, short SID);
 // 메모리 할당 해제 함수
-void free_user();
-void free_seller();
+void free_all();
+// 프로그램 저장 함수
+void insert_application(
+	char* k_name, char* e_name, char* k_exp, char* e_exp,
+	wchar_t* url, char genre, char extension,
+	short SID, int price, char lang_set);
+// 저장 폴더 제작 함수
+void make_temp_folder();
 
 // 에러 코드 처리 함수
 // 입력 : 에러 코드
@@ -92,7 +112,7 @@ bool is_new_seller(char* id);
 // 비밀번호 인증 함수
 // 출력 : UID 존재함 / -1 존재안함
 int is_exit_id(char* id, short quest, char* answer);
-// UID 반환 함수
+// ID 반환 함수
 // 출력 : ID
 // get_UID = 유저 / get_SID = 판매자
 int who_ID(Account ac, int(*func)(Account ac));
@@ -101,9 +121,13 @@ int get_SID(Account ac);
 // 비밀번호 확인 함수
 // 1 일치 / 0 불일치
 int check_pw(short UID, char* pw);
-// 유저 정보 가져오기
+// 정보 가져오기 함수
 User* get_data(short UID);
 Seller* get_data_seller(short SID);
+int get_money(short UID);
+// output 전용 함수들
+char* output_extension(char extension);
+char* output_genre(char genre);
 
 // 비밀번호 암호화 함수
 int make_pw_num(char* password);
@@ -112,3 +136,7 @@ int make_pw_num(char* password);
 int my_page(short UID);
 // 판매자 마이페이지 함수
 int seller_page(short SID);
+// 유저 라이브러리 페이지 함수
+int library_page(short UID);
+// 유저 상점 페이지 함수
+int shop_page(short UID);

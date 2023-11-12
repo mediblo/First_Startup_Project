@@ -107,7 +107,7 @@ void upload_app(short SID) {
 	char* kor_sel_lang[3] = { "둘 다", "한국어만", "영어만" };
 	char* eng_sel_lang[3] = { "Both", "Korean Only", "English Only" };
 
-	bool flag_NK = false, flag_NE = false, flag_EK = false, flag_EE = false;
+	bool flag_NK = false, flag_NE = false, flag_EK = false, flag_EE = false, flag_URL = false;
 	short temp_NL = 0;
 	unsigned char key[2] = { 0,0 };
 	int select = 0;
@@ -115,7 +115,9 @@ void upload_app(short SID) {
 	char temp_NK[20], temp_NE[20], temp_EK[101], temp_EE[101];
 	wchar_t url[200];
 	bool flag = true;
-	int chk_explan_K = 1, chk_explan_E = 1;
+	bool chk_explan_K = true, chk_explan_E = true, chk_URL = true;
+	int temp_genre = 0, temp_extension = 0, temp_money = -1;
+
 
 	Point p = { 0,0 };
 	
@@ -128,9 +130,11 @@ void upload_app(short SID) {
 	while (flag) {
 		p.x = (int)X_MAX / 4, p.y = ((int)Y_MAX / 4);
 		for (int i = 0; i < str_len; i++, p.y += 2) {
-			if (i == 9) p.x += 10, p.y -= 2;
+			if (i == 10) p.x += 10, p.y -= 2;
 			gotoxy(p.x, p.y);
-			print_choice_lang(kor_str[i], eng_str[i], i == select);
+			if ((sel_lang == 1 && (i == 2 || i == 4)) || (sel_lang == 2 && (i == 1 || i == 3)))
+				choice_color(darkGray, black, set_language ? kor_str[i] : eng_str[i]);
+			else print_choice_lang(kor_str[i], eng_str[i], i == select);
 			switch (i) {
 				case 0:
 					for (int j = 0, px = p.x+11; j < 3; j++, px += 6) {
@@ -139,10 +143,31 @@ void upload_app(short SID) {
 					}
 					break;
 				case 1:
-					if (flag_NK) printf(" : %s", temp_NK);
+					if (flag_NK)
+						if (sel_lang == 2) {
+							textcolor(darkGray, black);
+							printf(" : %s", temp_NK);
+							textcolor(white, black);
+						}
+						else printf(" : %s", temp_NK);
 					break;
 				case 2:
-					if (flag_NE) printf(" : %s", temp_NE);
+					if (flag_NE)
+						if (sel_lang == 1) {
+							textcolor(darkGray, black);
+							printf(" : %s", temp_NE);
+							textcolor(white, black);
+						}
+						else printf(" : %s", temp_NE);
+					break;
+				case 6:
+					printf(" : %s", output_genre(temp_genre));
+					break;
+				case 7:
+					printf(" : %s", output_extension(temp_extension));
+					break;
+				case 8:
+					if(temp_money != -1) printf(" : %d%s", temp_money, set_language ? "원" : "Won");
 					break;
 				case 5:
 					break;
@@ -175,10 +200,14 @@ void upload_app(short SID) {
 			case 's':
 			case 'S':
 				select = select == str_len - 1 ? str_len - 1 : select + 1;
+				if (sel_lang == 1 && (select == 2 || select == 4)) select++;
+				else if (sel_lang == 2 && (select == 1 || select == 3)) select++;
 				break;
 			case 'w':
 			case 'W':
 				select = select == 0 ? 0 : select - 1;
+				if (sel_lang == 1 && (select == 2 || select == 4)) select--;
+				else if (sel_lang == 2 && (select == 1 || select == 3)) select--;
 				break;
 			case K_ENTER:
 				switch (select) {
@@ -202,7 +231,7 @@ void upload_app(short SID) {
 						break;
 					case 3: // 한국어 소개말
 						if (flag_EK) chk_explan_K = popup_Explantion(temp_EK);
-						if (chk_explan_K)input_blank_some(set_language ? kor_str[select] : eng_str[select], temp_EK, sizeof(temp_EK)/sizeof(char));
+						if (chk_explan_K)input_blank_some(set_language ? kor_str[select] : eng_str[select], temp_EK, sizeof(temp_EK));
 						flag_EK = true;
 						draw_box();
 						if (set_language) draw_title("프로그램 등록");
@@ -210,28 +239,44 @@ void upload_app(short SID) {
 						break;
 					case 4: // 영어 소개말
 						if (flag_EE) chk_explan_E = popup_Explantion(temp_EE);
-						if(chk_explan_E) input_blank_some(set_language ? kor_str[select] : eng_str[select], temp_EE, sizeof(temp_EE) / sizeof(char));
+						if(chk_explan_E) input_blank_some(set_language ? kor_str[select] : eng_str[select], temp_EE, sizeof(temp_EE));
 						flag_EE = true;
 						draw_box();
 						if (set_language) draw_title("프로그램 등록");
 						else draw_title("Application Upload");
 						break;
 					case 5: // URL
-						input_blank_some(set_language ? kor_str[select] : eng_str[select], url, sizeof(url) / sizeof(char));
+						if (flag_URL) chk_URL = popup_Explantion(url);
+						if (chk_URL) input_only_url(set_language ? kor_str[select] : eng_str[select], url, sizeof(url) / sizeof(char));
+						flag_URL = true;
 						draw_box();
 						if (set_language) draw_title("프로그램 등록");
 						else draw_title("Application Upload");
 						break;
 					case 6: // 장르
+						temp_genre = input_genre(temp_genre);
+						draw_box();
+						if (set_language) draw_title("프로그램 등록");
+						else draw_title("Application Upload");
 						break;
 					case 7: // 확장자
+						temp_extension = input_extension(temp_extension);
+						draw_box();
+						if (set_language) draw_title("프로그램 등록");
+						else draw_title("Application Upload");
 						break;
 					case 8: // 가격
+						temp_money = set_money();
+						draw_box();
+						if (set_language) draw_title("프로그램 등록");
+						else draw_title("Application Upload");
 						break;
-					case 9:
+					case 9: // 취소
 						flag = false;
 						break;
-					case 10: 
+					case 10: // 결정
+						insert_application(temp_NK, temp_NE, temp_EK, temp_EE, url,
+							temp_genre, temp_extension, SID, temp_money, sel_lang);
 						flag = false;
 						break;
 				}

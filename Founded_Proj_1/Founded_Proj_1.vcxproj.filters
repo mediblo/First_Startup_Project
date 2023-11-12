@@ -42,13 +42,19 @@
     <ClCompile Include="make_pw.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="my_page.c">
+    <ClCompile Include="user_my_page.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="seller_my_page.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="URL_down.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="user_library_page.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="user_shop_page.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
