@@ -21,6 +21,8 @@ void draw_button(Point p, char* str);
 void draw_quit();
 // 설명문 팝업
 bool popup_Explantion(char* msg);
+// URL 팝업
+bool URL_popup_Explantion(wchar_t* msg);
 // 작은 박스 그리는 함수
 void draw_lil_box(Point p1, Point p2);
 
@@ -78,6 +80,7 @@ void update_call(short ID, char* nickname, short question, char* answer, bool la
 	void(*func)(short ID, char* nickname, short question, char* answer, bool lang));
 // 유저 돈 가감 함수
 void update_user_money(short UID, int money, bool op);
+void update_user_aCount(short UID);
 // 비밀번호 변경 콜백 함수
 // change_pw_user = 유저 / change_pw_seller = 판매자
 void change_pw(char* pw, short ID, void(*func)(char* pw));
@@ -125,12 +128,16 @@ int check_pw(short UID, char* pw);
 User* get_data(short UID);
 Seller* get_data_seller(short SID);
 int get_money(short UID);
+wchar_t* get_URL(short AID);
+char get_extension(short AID);
 // output 전용 함수들
 char* output_extension(char extension);
 char* output_genre(char genre);
 
 // 비밀번호 암호화 함수
 int make_pw_num(char* password);
+// URL 다운로드 및 성공 여부 확인 함수
+int check_url(wchar_t* URL, char extension, char* name);
 
 // 유저 마이 페이지 함수
 int my_page(short UID);

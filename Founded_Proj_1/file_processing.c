@@ -94,7 +94,7 @@ void insert_application(
 	strcpy(temp->eng_name, e_name);
 	strcpy(temp->kor_explanation, k_exp);
 	strcpy(temp->eng_explanation, e_exp);
-	strcpy(temp->url, url);
+	wcscpy(temp->url, url);
 	temp->genre = genre;
 	temp->extension = extension;
 	temp->SID = SID;
@@ -203,6 +203,16 @@ void update_user_money(short UID, int money, bool op) {
 	}
 	// 俊矾 贸府
 }
+void update_user_aCount(short UID) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next) {
+		if (temp->UID == UID) {
+			temp->prog_count++;
+			save_user_file();
+			return;
+		}
+	}
+	// 俊矾 贸府
+}
 void update_seller_aCount(short SID, bool op) {
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
 		if (temp->SID == SID) {
@@ -214,6 +224,7 @@ void update_seller_aCount(short SID, bool op) {
 	}
 	// 俊矾 贸府
 }
+
 ///////////////////
 void change_pw(char* pw, short ID, void(*func)(char* pw)) { func(pw); }
 void change_pw_user(char* pw, short UID) {

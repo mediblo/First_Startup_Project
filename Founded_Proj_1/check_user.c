@@ -119,3 +119,14 @@ Seller* get_data_seller(short SID) {
 		if (temp->SID == SID) return temp;
 	// 에러 처리
 }
+///////////////////////////프로그램 버전 함수들////////////
+wchar_t* get_URL(short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next)
+		if (temp->AID == AID) return temp->url;
+	// 에러 처리
+}
+char get_extension(short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next)
+		if (temp->AID == AID) return temp->extension;
+	// 에러 처리
+}

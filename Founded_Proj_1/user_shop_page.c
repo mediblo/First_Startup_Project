@@ -17,7 +17,7 @@ int shop_page(short UID) {
 	unsigned char key[2] = { 0,0 };
 	bool flag = false, page_flag = true;
 	int i = 0, temp_num = 0;
-	int sel = 0;
+	int sel = 0, chk_url = 0;
 	int user_money = get_money(UID);
 
 	char* sel_arrow[2] = { "<--", "-->" };
@@ -165,7 +165,15 @@ int shop_page(short UID) {
 				if (user_money < temp_AD[sel].price)
 					draw_message(set_language ? "돈이 부족합니다!" : "Not Enough Money!");
 				else {
+					chk_url = check_url(
+						get_URL(temp_AD[sel].AID), get_extension(temp_AD[sel].AID), temp_AD[sel].name);
+					if (chk_url == 1) { // 성공
+						update_user_money(UID, temp_AD[sel].price, false);
+						update_user_aCount(UID);
+					}
+					else { // 나머진 실패
 
+					}
 				}
 				return -10;
 			}

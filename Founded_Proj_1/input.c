@@ -227,7 +227,6 @@ int input_genre(int old_genre) {
 	}
 	// 에러 처리
 }
-
 char* output_genre(char genre) {
 	char* kor_genre[12] = { "게임", "백신", "오피스", "메신저", "데이터베이스",
 							"그래픽", "교육", "동영상", "사진", "음악", "텍스트",
@@ -237,7 +236,6 @@ char* output_genre(char genre) {
 							"etc." };
 	return set_language ? kor_genre[genre] : eng_genre[genre];
 }
-
 // exe, zip, 7z, gif
 // mp3, wav, mp4, avi
 // png, jpg, pptx, xlex
@@ -311,7 +309,6 @@ int input_extension(int old_extension) {
 	}
 	// 에러 처리
 }
-
 char* output_extension(char extension) {
 	char* str_extension[16] = { "exe", "zip", "7z", "gif", "mp3",
 								"wav", "mp4", "avi", "png", "jpg",

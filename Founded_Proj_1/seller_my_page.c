@@ -246,7 +246,7 @@ void upload_app(short SID) {
 						else draw_title("Application Upload");
 						break;
 					case 5: // URL
-						if (flag_URL) chk_URL = popup_Explantion(url);
+						if (flag_URL) chk_URL = URL_popup_Explantion(url);
 						if (chk_URL) input_only_url(set_language ? kor_str[select] : eng_str[select], url, sizeof(url) / sizeof(char));
 						flag_URL = true;
 						draw_box();

@@ -32,12 +32,18 @@ int check_url(wchar_t* URL, char extension, char* name) {
 			check = 2;
 			break;
 		case INET_E_DOWNLOAD_FAILURE:
-			// URL 경로가 문제가 있거나 존재하지 않음
-			// 인터넷 문제
 			// 저장 경로가 없거나 권한 부족
-			// 그쪽에서 파일을 안줘영
 			// callback 문제 <-- 이건 안써서 ㄱㅊ
 			check = 3;
+			break;
+		case INET_E_RESOURCE_NOT_FOUND:
+			// URL 경로가 문제가 있거나 존재하지 않음
+			// 인터넷 문제
+			// 그쪽에서 파일을 안줘영
+			check = 4;
+			break;
+		default:
+			// 에러 처리
 			break;
 	}
 	return check;
