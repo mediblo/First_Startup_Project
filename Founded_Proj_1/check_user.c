@@ -130,3 +130,9 @@ char get_extension(short AID) {
 		if (temp->AID == AID) return temp->extension;
 	// 에러 처리
 }
+bool is_hav_app(short UID, short AID) {
+	for (AID_D* temp = root_AID_D; temp != NULL; temp = temp->next)
+		if (temp->UID == UID && temp->AD.AID == AID)
+			return true;
+	return false;
+}

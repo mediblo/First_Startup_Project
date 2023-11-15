@@ -14,6 +14,7 @@
 short UID_count = 0;
 short SID_count = 0;
 short AID_count = 0;
+short AID_D_count = 0;
 short UID_max = 0;
 short SID_max = 0;
 short AID_max = 0;
@@ -21,6 +22,7 @@ User * root_user = NULL;
 Seller * root_seller = NULL;
 App * root_app = NULL;
 Review * root_review = NULL;
+AID_D* root_AID_D = NULL;	
 bool set_language = true;
 
 ///////////////////
@@ -32,6 +34,8 @@ void save_seller_file();
 void read_seller_file();
 void save_application_file();
 void read_application_file();
+void save_AID_D_file();
+void read_AID_D_file();
 ///////////////////
 void update_seller_aCount(short SID, bool op);
 ///////////////////
@@ -51,6 +55,7 @@ void insert_user(char* id, char* pw, char* nickname, short question, char* answe
 	temp->money = 0;
 	temp->lang = set_language;
 	temp->next = NULL;
+	temp->appData = NULL;
 	temp->UID = UID_max++;
 	UID_count++;
 
@@ -113,6 +118,52 @@ void insert_application(
 	save_application_file();
 	save_proj_file();
 }
+void insert_AID_D(short UID, AData AD) {
+	AID_D* temp = (AID_D*)malloc(sizeof(AID_D));
+	temp->UID = UID;
+	temp->AD = AD;
+	temp->AD.price = 4;
+	temp->next = NULL;
+
+	if (root_AID_D == NULL) root_AID_D = temp;
+	else {
+		AID_D* prev = root_AID_D;
+		bool flag = false;
+		for (AID_D* temp_2 = root_AID_D; temp_2 != NULL; temp_2 = temp_2->next) {
+			if (temp_2->UID == UID) flag = true;
+			if (flag == true) {
+				if ((prev->UID != UID && temp_2->UID == UID) || (prev->UID == UID && temp_2->UID != UID)) {
+					temp->next = temp_2;
+					prev->next = temp;
+					break;
+				}
+				else if (temp_2->next == NULL) {
+					temp_2->next = temp;
+					break;
+				}
+			}
+			prev = temp_2;
+		}
+		if (flag == false) {
+			temp->next = root_AID_D;
+			root_AID_D = temp;
+		}
+	}
+	AID_D_count++;
+	save_AID_D_file();
+	save_proj_file();
+
+	for (User* temp_U = root_user; temp_U != NULL; temp_U = temp_U->next) {
+		if (temp_U->UID == UID) {
+			if (temp_U->appData == NULL) {
+				temp_U->appData = temp;
+				save_user_file();
+			}
+			break;
+		}
+	}
+
+}
 ///////////////////
 void delete_call(short ID, void(*func)(short ID)) { func(ID); }
 void delete_user(short UID) {
@@ -120,15 +171,58 @@ void delete_user(short UID) {
 
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID) {
-			prev->next = temp->next;
+			if (root_user == prev) prev = prev->next;
+			else prev->next = temp->next;
+
+			AID_D* prev_A = temp->appData;
+			AID_D* temp_A = temp->appData;
+			bool flag = false, save_flag = true, prev_flag = false;
+
+			while(!flag || temp_A != NULL){
+				if (temp_A != prev_A) prev_A = prev_A->next;
+				if (temp_A->UID == UID) {
+					AID_D* free_temp = temp_A;
+					flag = true;
+					if (prev_A != temp_A) {
+						temp_A = temp_A->next;
+						prev_A->next = temp_A;
+					}
+					else {
+						temp_A = temp_A->next;
+						prev_A = prev_A->next;
+					}
+					
+					free(free_temp);
+
+					if (--AID_D_count == 0) {
+						root_AID_D = NULL;
+						save_flag = false;
+						break;
+					}
+					else root_AID_D = prev_A;
+				}
+				else temp_A = temp_A->next;
+			}
+			
+			// flag가 두 개인 이유
+			//   save_flag 사용 이유
+			//     root가 NULL이면 굳이 저장할 필요가 없다
+			//     재시작시 파일을 불러오지 않아서 NULL로 불러와지기 때문!
+			//   flag 사용 이유
+			//     AID_D의 변경 여부 [ 없으면 저장할 필요가 없음 ]
+			if (save_flag && flag) save_AID_D_file();
 			free(temp);
-			if (--UID_count != 0) save_user_file();
+			if (--UID_count != 0) {
+				root_user = prev;
+				save_user_file();
+			}
 			else root_user = NULL;
+			save_proj_file(); // count 리셋 저장
 			return;
 		}
 		prev = temp;
 	}
-	// 에러 처리
+	error(200);
 }
 void delete_seller(short SID) {
 	Seller* prev = root_seller;
@@ -143,7 +237,7 @@ void delete_seller(short SID) {
 		}
 		prev = temp;
 	}
-	// 에러 처리
+	error(201);
 }
 void delete_application(short AID) {
 	App* prev = root_app;
@@ -158,7 +252,22 @@ void delete_application(short AID) {
 		}
 		prev = temp;
 	}
-	// 에러 처리
+	error(202);
+}
+void delete_AID_D(short UID, short AID) {
+	AID_D* prev = root_AID_D;
+
+	for (AID_D* temp = root_AID_D; temp != NULL; temp = temp->next) {
+		if (temp->UID == UID && temp->AD.AID == AID) {
+			prev->next = temp->next;
+			free(temp);
+			if (--AID_D_count != 0) save_AID_D_file();
+			else root_AID_D = NULL;
+			return;
+		}
+		prev = temp;
+	}
+	error(203);
 }
 ///////////////////
 void update_call(short ID, char* nickname, short question, char* answer, bool lang,
@@ -176,7 +285,7 @@ void update_user(short UID, char* nickname, short question, char* answer, bool l
 			return;
 		}
 	}
-	// 에러 처리
+	error(210);
 }
 void update_seller(short SID, char* nickname, short question, char* answer, bool lang) {
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
@@ -189,7 +298,17 @@ void update_seller(short SID, char* nickname, short question, char* answer, bool
 			return;
 		}
 	}
-	// 에러 처리
+	error(211);
+}
+void update_AID_D_count(short UID, short AID, bool op) {
+	for (AID_D* temp = root_AID_D; temp != NULL; temp = temp->next) {
+		if (temp->UID == UID && temp->AD.AID == AID) {
+			temp->AD.price = op ? temp->AD.price + 5 : temp->AD.price - 1;
+			break;
+		}
+	}
+	save_AID_D_file();
+	save_proj_file();
 }
 ///////////////////
 void update_user_money(short UID, int money, bool op) {
@@ -201,7 +320,7 @@ void update_user_money(short UID, int money, bool op) {
 			return;
 		}
 	}
-	// 에러 처리
+	error(212);
 }
 void update_user_aCount(short UID) {
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
@@ -211,7 +330,7 @@ void update_user_aCount(short UID) {
 			return;
 		}
 	}
-	// 에러 처리
+	error(213);
 }
 void update_seller_aCount(short SID, bool op) {
 	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
@@ -222,9 +341,8 @@ void update_seller_aCount(short SID, bool op) {
 			return;
 		}
 	}
-	// 에러 처리
+	error(214);
 }
-
 ///////////////////
 void change_pw(char* pw, short ID, void(*func)(char* pw)) { func(pw); }
 void change_pw_user(char* pw, short UID) {
@@ -234,7 +352,7 @@ void change_pw_user(char* pw, short UID) {
 			return;
 		}
 	}
-	// 에러 처리
+	error(220);
 }
 void change_pw_seller(char* pw, short SID) {
 	for (Seller* temp = root_seller; temp == NULL; temp = temp->next) {
@@ -243,7 +361,7 @@ void change_pw_seller(char* pw, short SID) {
 			return;
 		}
 	}
-	// 에러 처리
+	error(221);
 }
 ///////////////////
 void save_user_file() {
@@ -291,6 +409,7 @@ void save_proj_file() {
 	proj.count_uid = UID_count;
 	proj.count_sid = SID_count;
 	proj.count_aid = AID_count;
+	proj.cound_aid_d = AID_D_count;
 	proj.max_uid = UID_max;
 	proj.max_sid = SID_max;
 	proj.max_aid = AID_max;
@@ -322,6 +441,7 @@ void read_proj_file() {
 	UID_count = proj.count_uid;
 	SID_count = proj.count_sid;
 	AID_count = proj.count_aid;
+	AID_D_count = proj.cound_aid_d;
 	UID_max = proj.max_uid;
 	SID_max = proj.max_sid;
 	AID_max = proj.max_aid;
@@ -403,6 +523,45 @@ void read_application_file() {
 		fclose(fp);
 	}
 }
+void save_AID_D_file() {
+	FILE* fp = NULL;
+	AID_D* temp = root_AID_D;
+
+	if ((fp = fopen("data/AID_D.bin", "wb")) == NULL) {
+		system("mkdir data");
+		error(108);
+	}
+	else {
+		while (temp != NULL) {
+			fwrite(temp, sizeof(AID_D), 1, fp);
+			temp = temp->next;
+		}
+		fclose(fp);
+	}
+}
+void read_AID_D_file() {
+	FILE* fp = NULL;
+	AID_D* temp = NULL; // 데이터를 받을 더미
+	AID_D** temp_root = &root_AID_D; // 루트에 연결할 더미
+
+	if ((fp = fopen("data/AID_D.bin", "rb")) == NULL) {
+		save_AID_D_file();
+		error(109);
+	}
+	else {
+		while (1) {
+			temp = (AID_D*)malloc(sizeof(AID_D)); // 데이터 입력 받기 전 메모리 할당 [ 안하면 메모리 없는거! ]
+			if (fread(temp, sizeof(AID_D), 1, fp) != 1) { // 데이터 입력이 정상인지 판별
+				if (temp != NULL) free(temp); // NULL일 때 free하면 메모리 누수가 일어난다.
+				break; // 다 읽었으면 끝내
+			}
+			*temp_root = temp; // 데이터를 읽고
+			temp_root = &temp->next; // 다음 주소로 이동
+		}
+		fclose(fp);
+	}
+}
+///////////////////
 void make_temp_folder() {
 	FILE* fp = NULL;
 
@@ -411,6 +570,22 @@ void make_temp_folder() {
 		error(108);
 	}
 	fclose(fp);
+}
+bool is_hav_file(char extension, char* name) {
+	FILE* fp = NULL;
+	char* type = output_extension(extension);
+	char file_name[50]="download/";
+
+	strcat(file_name, name);
+	strcat(file_name, ".");
+	strcat(file_name, type);
+
+	if ((fp = fopen(file_name, "r")) == NULL) return false;
+	else {
+		fclose(fp);
+		return true;
+	}
+	// 에러 처리
 }
 ///////////////////
 void free_user() {
@@ -422,15 +597,22 @@ void free_user() {
 }
 void free_seller() {
 	while (root_seller != NULL) {
-		User* temp = root_seller;
+		Seller* temp = root_seller;
 		root_seller = root_seller->next;
 		free(temp);
 	}
 }
 void free_application() {
 	while (root_app != NULL) {
-		User* temp = root_app;
+		App* temp = root_app;
 		root_app = root_app->next;
+		free(temp);
+	}
+}
+void free_AID_D() {
+	while (root_AID_D != NULL) {
+		AID_D* temp = root_AID_D;
+		root_AID_D = root_AID_D->next;
 		free(temp);
 	}
 }
@@ -438,4 +620,10 @@ void free_all() {
 	free_user();
 	free_seller();
 	free_application();
+	free_AID_D();
+
+	if (UID_count == 0) remove("data/user.bin");
+	if (SID_count == 0) remove("data/seller.bin");
+	if (AID_count == 0) remove("data/application.bin");
+	if (AID_D_count == 0) remove("data/AID_D.bin");
 }

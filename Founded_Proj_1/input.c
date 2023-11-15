@@ -56,12 +56,11 @@ void input_blank_some(const char str[], char some[], rsize_t len_str) {
 	textcolor(white, black);
 	gotoxy(p.x, ++p.y);
 
-	rewind(stdin); // 버퍼 제거 [ 편-안 ]
-
 	gotoxy(p.x, ++p.y);
 	if (set_language) printf("%s 입력 : ", str);
 	else printf("Input your %s : ", str);
 	fgets(some, len_str, stdin);
+	rewind(stdin); // 버퍼 제거 [ 편-안 ]
 	system("cls");
 }
 
@@ -78,12 +77,11 @@ void input_only_url(const char str[], wchar_t some[], rsize_t len_str) {
 	textcolor(white, black);
 	gotoxy(p.x, ++p.y);
 
-	rewind(stdin); // 버퍼 제거 [ 편-안 ]
-
 	gotoxy(p.x, ++p.y);
 	if (set_language) printf("%s 입력 : ", str);
 	else printf("Input your %s : ", str);
 	fgetws(some, len_str, stdin);
+	rewind(stdin); // 버퍼 제거 [ 편-안 ]
 	system("cls");
 }
 
@@ -221,7 +219,7 @@ int input_genre(int old_genre) {
 				break;
 			case K_ENTER:
 				system("cls");
-				return sel_genre;
+				return sel_genre == gen_count-1 ? old_genre : sel_genre;
 			}
 		}
 	}
@@ -303,7 +301,7 @@ int input_extension(int old_extension) {
 				break;
 			case K_ENTER:
 				system("cls");
-				return sel_extension;
+				return sel_extension == ext_count-1 ? old_extension : sel_extension;
 			}
 		}
 	}
@@ -344,11 +342,11 @@ int set_money() {
 			break;
 		}
 	}
-
+	rewind(stdin);
 	system("cls");
 	if (flag) {
 		draw_message(set_language ? "입력하신 값은 숫자가 아닙니다!" : "The value you entered is not a number!");
 		return set_money();
 	}
-	else atoi(money);
+	else return atoi(money);
 }

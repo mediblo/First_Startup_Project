@@ -17,6 +17,7 @@ int main() {
 	if (UID_count != 0)read_user_file(); // NULL 읽기 방지
 	if (SID_count != 0)read_seller_file(); // NULL 읽기 방지
 	if (AID_count != 0)read_application_file(); // NULL 읽기 방지
+	if (AID_D_count != 0)read_AID_D_file(); // NULL 읽기 방지
 
 	do {
 		
@@ -49,6 +50,7 @@ int main() {
 			if (page == -1) flag = true;
 		}
 		system("cls");
+		rewind(stdin); // 혹시 모를 버퍼 제거합시다.
 	} while (page != -10);
 	draw_quit();
 	

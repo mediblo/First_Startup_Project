@@ -78,9 +78,10 @@ void delete_application(short AID);
 // update_user = 유저 / update_seller = 판매자
 void update_call(short ID, char* nickname, short question, char* answer, bool lang,
 	void(*func)(short ID, char* nickname, short question, char* answer, bool lang));
-// 유저 돈 가감 함수
+// 업데이트 함수
 void update_user_money(short UID, int money, bool op);
 void update_user_aCount(short UID);
+void update_AID_D_count(short UID, short AID, bool op);
 // 비밀번호 변경 콜백 함수
 // change_pw_user = 유저 / change_pw_seller = 판매자
 void change_pw(char* pw, short ID, void(*func)(char* pw));
@@ -93,8 +94,13 @@ void insert_application(
 	char* k_name, char* e_name, char* k_exp, char* e_exp,
 	wchar_t* url, char genre, char extension,
 	short SID, int price, char lang_set);
+// AID_D 관련 함수
+void insert_AID_D(short UID, AData AD);
+void delete_AID_D(short UID, short AID);
 // 저장 폴더 제작 함수
 void make_temp_folder();
+// 파일 존재하는지 확인하는 함수
+bool is_hav_file(char extension, char* name);
 
 // 에러 코드 처리 함수
 // 입력 : 에러 코드
@@ -112,6 +118,8 @@ int is_seller(Account ac, short type);
 bool is_new_who(char* id, int(*func)(char*));
 bool is_new_user(char* id);
 bool is_new_seller(char* id);
+// 이미 가지고 있는 프로그램인가?
+bool is_hav_app(short UID, short AID);
 // 비밀번호 인증 함수
 // 출력 : UID 존재함 / -1 존재안함
 int is_exit_id(char* id, short quest, char* answer);
@@ -130,6 +138,7 @@ Seller* get_data_seller(short SID);
 int get_money(short UID);
 wchar_t* get_URL(short AID);
 char get_extension(short AID);
+short get_app_count(short UID, short AID);
 // output 전용 함수들
 char* output_extension(char extension);
 char* output_genre(char genre);

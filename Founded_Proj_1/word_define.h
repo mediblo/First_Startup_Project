@@ -31,7 +31,20 @@ typedef struct {
 	char* password;
 } Account;
 
-// TYPE 1. 사용자 및 판매자 구조체
+typedef struct app_data {
+	char name[20]; // 프로그램 이름
+	char explanation[101]; // 프로그램 소개말
+	short AID; // 프로그램 고유 ID
+	int price; // 가격 or 라이브러리때는 다운 가능 횟수로 변경
+} AData;
+
+typedef struct aid_data {
+	short UID; // 유저 고유
+	AData AD; // 프로그램 고유 정보
+	struct aid_data* next;
+} AID_D;
+
+// TYPE 1. 사용자 구조체
 // 돈 추가해야함
 typedef struct user{
 	char id[20]; // 아이디
@@ -44,6 +57,7 @@ typedef struct user{
 	short report_count; // 신고 횟수
 	short prog_count; // 프로그램 갯수
 	bool lang; // 언어 설정 true = kor / false = eng
+	AID_D* appData;
 	struct user* next; // 연결리스트
 } User;
 
@@ -84,13 +98,6 @@ typedef struct application{
 	struct application* next; // 연결리스트
 } App;
 
-typedef struct app_data {
-	char name[20]; // 프로그램 이름
-	char explanation[101]; // 프로그램 소개말
-	short AID; // 프로그램 고유 ID
-	int price; // 가격
-} AData;
-
 typedef struct review {
 	short UID; // 유저 고유 ID
 	short GID; // 프로그램 고유 ID
@@ -104,6 +111,7 @@ typedef struct project_secret_setting{
 	short count_uid;
 	short count_sid;
 	short count_aid;
+	short cound_aid_d;
 	short max_uid;
 	short max_sid;
 	short max_aid;
@@ -119,9 +127,11 @@ extern User* root_user; // 유저 전역변수
 extern Seller* root_seller; // 판매자 전역변수
 extern App* root_app; // 프로그램 전역변수
 extern Review* root_review; // 리뷰 전역변수
+extern AID_D* root_AID_D; // 유저가 보유한 프로그램 전역변수
 extern short UID_count; // UID 카운트
 extern short SID_count; // SID 카운트
 extern short AID_count; // AID 카운트
+extern short AID_D_count; // AID_D 카운트
 extern short UID_max; // UID 최대
 extern short SID_max; // SID 최대
 extern short AID_max; // AID 최대

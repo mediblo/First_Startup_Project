@@ -15,7 +15,7 @@ int shop_page(short UID) {
 	Point p = { 20, 10 };
 	short page_num = 0, page = 2;
 	unsigned char key[2] = { 0,0 };
-	bool flag = false, page_flag = true;
+	bool flag = false, page_flag = true, is_hav[5];
 	int i = 0, temp_num = 0;
 	int sel = 0, chk_url = 0;
 	int user_money = get_money(UID);
@@ -29,6 +29,7 @@ int shop_page(short UID) {
 			temp_num = 0;
 			i = 0;
 			flag = false;
+			for(int j=0; j<5; j++) is_hav[j] = false;
 			// 5개 앱을 하나의 페이지에 있을 수 있도록 프로그램 아이디 및 AID 추출
 			// 페이지 인식은 어떻게?
 			for (App* temp = root_app; temp != NULL; temp = temp->next, i++) {
@@ -43,6 +44,7 @@ int shop_page(short UID) {
 						strcpy(temp_AD[temp_num].explanation, temp->lang_set == 1 ? temp->kor_explanation : temp->eng_explanation);
 					}
 					temp_AD[temp_num].AID = temp->AID;
+					is_hav[temp_num] = is_hav_app(UID, temp->AID);
 					temp_AD[temp_num++].price = temp->price;
 				}
 				if (temp_num == 5) break;
@@ -63,8 +65,10 @@ int shop_page(short UID) {
 		for (int i = 0; i < 5; i++, p.y += 2) {
 			gotoxy(p.x, p.y);
 			if (temp_AD[i].AID == -1) continue;
-			else
-				i == sel ? select_color(temp_AD[i].name) : printf("%s",temp_AD[i].name);
+			else {
+				i == sel ? select_color(temp_AD[i].name) : printf("%s", temp_AD[i].name);
+				if (is_hav[i]) printf(" [H]");
+			}
 		}
 
 		p.y += 4;
@@ -93,7 +97,7 @@ int shop_page(short UID) {
 		}
 		p.x = X_MAX / 1.7, p.y = Y_MAX / 1.5;
 		gotoxy(p.x, p.y++);
-		printf("%s :%10d", set_language ? "가격" : "Price", temp_AD[sel].price);
+		printf("%s :%10d", set_language ? "가격" : "Price", is_hav ? (temp_AD[sel].price / 20) * 10 : temp_AD[sel].price);
 		gotoxy(p.x, ++p.y);
 		printf("%s :%10d", set_language ? "보유 자산" : "Money", user_money);
 
@@ -164,23 +168,33 @@ int shop_page(short UID) {
 			case K_ENTER:
 				if (user_money < temp_AD[sel].price)
 					draw_message(set_language ? "돈이 부족합니다!" : "Not Enough Money!");
+				else if (is_hav[sel]) {
+					update_AID_D_count(UID, temp_AD[sel].AID, true);
+					draw_message(set_language ? "다운 가능 횟수 5회 추가!" : "Download limit increased by 5 times!");
+				}
 				else {
+					p.x = X_MAX / 2 - 8, p.y = Y_MAX / 2 - 1;
+					system("cls");
+					draw_box();
+					draw_button(p, set_language ? "다운로드중..." : "Downloading...");
 					chk_url = check_url(
 						get_URL(temp_AD[sel].AID), get_extension(temp_AD[sel].AID), temp_AD[sel].name);
 					if (chk_url == 1) { // 성공
 						update_user_money(UID, temp_AD[sel].price, false);
 						update_user_aCount(UID);
+						insert_AID_D(UID, temp_AD[sel]);
+						user_money = get_money(UID);
+						page_flag = true;
+						draw_message(set_language ? "다운로드 완료." : "Download Complete");
 					}
-					else { // 나머진 실패
-
-					}
+					else // 나머진 실패
+						draw_message(set_language ? "다운로드 실패." : "Download Fail");
 				}
-				return -10;
+				shop_page_setting();
 			}
 		}
 	}
-
-	return -10;
+	return page;
 }
 // 기본 UI 출력
 void shop_page_setting() {

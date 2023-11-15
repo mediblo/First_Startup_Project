@@ -193,6 +193,12 @@ void upload_app(short SID) {
 			case K_UP:
 				select = select == 0 ? 0 : select - 1;
 				break;
+			case K_LEFT:
+				if (select == 10) select = 9;
+				break;
+			case K_RIGHT:
+				if (select == 9) select = 10;
+				break;
 			}
 		}
 		else {
@@ -208,6 +214,14 @@ void upload_app(short SID) {
 				select = select == 0 ? 0 : select - 1;
 				if (sel_lang == 1 && (select == 2 || select == 4)) select--;
 				else if (sel_lang == 2 && (select == 1 || select == 3)) select--;
+				break;
+			case 'a':
+			case 'A':
+				if (select == 10) select = 9;
+				break;
+			case 'd':
+			case 'D':
+				if (select == 9) select = 10;
 				break;
 			case K_ENTER:
 				switch (select) {
@@ -275,9 +289,12 @@ void upload_app(short SID) {
 						flag = false;
 						break;
 					case 10: // ∞·¡§
-						insert_application(temp_NK, temp_NE, temp_EK, temp_EE, url,
-							temp_genre, temp_extension, SID, temp_money, sel_lang);
-						flag = false;
+						if(temp_EE && temp_EK && temp_NE && temp_NK && flag_URL && temp_money != -1){
+							insert_application(temp_NK, temp_NE, temp_EK, temp_EE, url,
+								temp_genre, temp_extension, SID, temp_money, sel_lang);
+							flag = false;
+						}
+						else draw_title(set_language ? "∫Ûƒ≠¿Ã ¿÷Ω¿¥œ¥Ÿ!" : "Input Empty place!!");
 						break;
 				}
 			}
