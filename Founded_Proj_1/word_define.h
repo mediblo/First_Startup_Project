@@ -44,6 +44,27 @@ typedef struct aid_data {
 	struct aid_data* next;
 } AID_D;
 
+typedef struct review {
+	short UID; // 유저 고유 ID
+	short AID; // 프로그램 고유 ID
+	char rate; // 평점
+	bool flag; // 탈퇴 여부 [ 탈퇴시 탈퇴한 사용자로 나오게 ]
+	char comment[101]; // 리뷰 [ kor = 50, eng = 100자 이내 ]
+	struct review* next; // 연결리스트
+} Review;
+
+typedef struct review_data {
+	char name[20]; // 닉네임 [ 탈퇴시 Unable로 ]
+	char comment[101]; // 리뷰
+	char rate; // 평점
+}RData;
+
+typedef struct report_data {
+	char comment[101]; // 신고 사유
+	char reason; // 신고 이유
+	struct report_data* next; // リンクドリスト
+} Rep_data;
+
 // TYPE 1. 사용자 구조체
 // 돈 추가해야함
 typedef struct user{
@@ -54,7 +75,6 @@ typedef struct user{
 	char answer[20]; // 답변
 	short UID; // 고유 UID
 	int money; // 돈
-	short report_count; // 신고 횟수
 	short prog_count; // 프로그램 갯수
 	bool lang; // 언어 설정 true = kor / false = eng
 	AID_D* appData;
@@ -69,9 +89,8 @@ typedef struct seller{
 	short question; // 질문
 	char answer[20]; // 답변
 	short SID; // 고유 SID
-	short report_count; // 신고 횟수
 	short prog_count; // 프로그램 갯수
-	int money; // 매출
+	int revenue; // 매출
 	bool lang; // 언어 설정 true = kor / false = eng
 	struct seller* next; // 연결리스트
 } Seller;
@@ -94,24 +113,22 @@ typedef struct application{
 	short SID; // 판매자 고유 ID
 	short AID; // 프로그램 고유 ID
 	int price; // 가격
+	int revenue; // 매출
 	char lang_set; // 지원 언어 [ 0 = 둘 다, 1 = 한국어, 2 = 영어 ]
+	short report_count; // 신고 몇번 먹음?
+	bool is_report; // 지금 신고당했나요? [ 넹 / 아뇽 ]
 	struct application* next; // 연결리스트
+	Review* Rnext; // 리뷰 연결리스트
+	Rep_data* repNext; // 신고 연결리스트
 } App;
-
-typedef struct review {
-	short UID; // 유저 고유 ID
-	short GID; // 프로그램 고유 ID
-	short RID; // 리뷰 ID
-	char comment[101]; // 리뷰 [ kor = 50, eng = 100자 이내 ]
-	struct review* next; // 연결리스트
-} Review;
 
 // 프로그램 내부 주요 정보 구조체
 typedef struct project_secret_setting{
 	short count_uid;
 	short count_sid;
 	short count_aid;
-	short cound_aid_d;
+	short count_aid_d;
+	short count_rid;
 	short max_uid;
 	short max_sid;
 	short max_aid;
@@ -132,6 +149,7 @@ extern short UID_count; // UID 카운트
 extern short SID_count; // SID 카운트
 extern short AID_count; // AID 카운트
 extern short AID_D_count; // AID_D 카운트
+extern short RID_count; // RID 카운트
 extern short UID_max; // UID 최대
 extern short SID_max; // SID 최대
 extern short AID_max; // AID 최대

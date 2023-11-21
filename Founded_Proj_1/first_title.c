@@ -10,6 +10,7 @@
 
 #pragma warning(disable:4244) // double -> int 변환 손실 에러 처리
 #pragma warning(disable:4267) // size_t -> int 변환 손실 에러 처리
+#pragma warning(disable:6001) // 초기화 안한 메모리 사용 에러 처리
 
 PNS select_title();
 void select_register();
@@ -186,6 +187,7 @@ PNS select_title() {
 					Account ac = { temp_id, temp_pw };
 					result=is_who(ac, set_type, is_user);
 					if ( result == -2) result = is_who(ac, set_type, is_seller);
+					if (result == -2) result = is_admin(ac);
 					switch (result) {
 						case 1: // 성공
 							draw_message(set_language ? "성공!!" : "SUCCUSS!!");
@@ -358,36 +360,41 @@ void select_register() {
 }
 
 void select_find_pw() {
-	char* eng_str_find_pw[5] = { "ID","QUESTION","ANSWER" ,"BACK", "FIND PW"};
-	char* kor_str_find_pw[5] = { "아이디","질문","답변" ,"뒤로가기", "비밀번호 찾기" };
-	char temp_id[20] = "";
-	char temp_new_pw[20] = "";
-	char temp_answer[20] = "";
-	short temp_UID = 0;
-	int question = 0;
-	int select = 0;
-	int key[2] = { 0,0 };
+	char* eng_str_find_pw[7] = { "ID", "USER" ,"SELLER", "QUESTION", "ANSWER", "BACK", "FIND PW"};
+	char* kor_str_find_pw[7] = { "아이디", "유저", "판매자", "질문", "답변", "뒤로가기", "비밀번호 찾기"};
+	char temp_id[20] = "", temp_new_pw[20] = "", temp_answer[20] = "";
+	short temp_ID = 0, temp_type = 0;
+	int question = 0, select = 0;
+	unsigned char key[2] = { 0,0 };
 	Point p = { 0,0 };
 	bool flag = TRUE;
 
 	system("cls");
 	draw_box();
-	draw_title("FIND PASSWORD");
+	draw_title(set_language ? "비밀번호 찾기" : "FIND PASSWORD");
 
 	while (flag) {
 		p.x = X_MAX / 3, p.y = Y_MAX / 4;
-		for (int i = 0; i < 5; i++, p.y += 2) {
-			if (i == 4) p.x += 10, p.y -= 2;
-			gotoxy(p.x, p.y);
+		for (int i = 0; i < 7; i++, p.y += 2) {
+			if (i == 2 || i == 6) { 
+				p.y -= 2;
+				gotoxy(p.x + 10, p.y);
+			}
+			else gotoxy(p.x, p.y);
 			print_choice_lang(kor_str_find_pw[i], eng_str_find_pw[i], select == i);
 			switch (i) {
 			case 0:
 				if (strlen(temp_id) != 0) printf(" : %s", temp_id);
 				break;
 			case 1:
+			case 2:
+				if (i - 1 == temp_type) printf(" ■");
+				else printf(" □");
+				break;
+			case 3:
 				printf(" : No.%d", question + 1);
 				break;
-			case 2:
+			case 4:
 				if (strlen(temp_answer) != 0) printf(" : %s", temp_answer);
 				break;
 			}
@@ -398,16 +405,18 @@ void select_find_pw() {
 			key[1] = _getch();
 			switch (key[1]) {
 			case K_DOWN:
-				select = select == 4 ? 4 : select + 1;
+				if (select == 1) select = 3;
+				else select = select == 6 ? 6 : select + 1;
 				break;
 			case K_UP:
-				select = select == 0 ? 0 : select - 1;
+				if (select == 3) select = 1;
+				else select = select == 0 ? 0 : select - 1;
 				break;
 			case K_RIGHT:
-				if (select == 3) select = 4;
+				if (select == 5 || select == 1) select++;
 				break;
 			case K_LEFT:
-				if (select == 4) select = 3;
+				if (select == 6 || select == 2) select--;
 				break;
 			}
 		}
@@ -415,19 +424,21 @@ void select_find_pw() {
 			switch (key[0]) {
 			case 'w':
 			case 'W':
-				select = select == 0 ? 0 : select - 1;
+				if (select == 3) select = 1;
+				else select = select == 0 ? 0 : select - 1;
 				break;
 			case 's':
 			case 'S':
-				select = select == 4 ? 4 : select + 1;
+				if (select == 1) select = 3;
+				else select = select == 6 ? 6 : select + 1;
 				break;
 			case 'a':
 			case 'A':
-				if (select == 4) select = 3;
+				if (select == 6 || select == 2) select--;
 				break;
 			case 'd':
 			case 'D':
-				if (select == 3) select = 4;
+				if (select == 5 || select == 1) select++;
 				break;
 			case K_ENTER:
 				switch (select) {
@@ -436,24 +447,28 @@ void select_find_pw() {
 					draw_box();
 					draw_title(set_language ? "비밀번호 찾기" : "FIND PASSWORD");
 					break;
-				case 1: // 질문 입력
+				case 1:
+				case 2:
+					temp_type = select - 1;
+					break;
+				case 3: // 질문 입력
 					question = select_question(question);
 					draw_box();
 					draw_title(set_language ? "비밀번호 찾기" : "FIND PASSWORD");
 					break;
-				case 2: // 답변 입력
+				case 4: // 답변 입력
 					input_some(set_language ? kor_str_find_pw[select] : eng_str_find_pw[select], temp_answer);
 					draw_box();
 					draw_title("FIND PASSWORD");
 					break;
-				case 3: // 뒤로가기
+				case 5: // 뒤로가기
 					flag = FALSE;
 					break;
-				case 4: // 찾기
-					temp_UID = is_exit_id(temp_id, question, temp_answer);
-					if (temp_UID != -1) {
+				case 6: // 찾기
+					temp_ID = is_exit_who(temp_id, question, temp_answer, temp_type ? is_exit_id_seller : is_exit_id);
+					if (temp_ID != -1) {
 						input_some(set_language ? "새로운 비밀번호" : "NEW PASSWORD", temp_new_pw);
-						change_pw(temp_new_pw, temp_UID, change_pw_user);
+						change_pw(temp_new_pw, temp_ID, temp_type ? change_pw_seller : change_pw_user);
 					}
 					else draw_message(set_language ? "아이디가 존재하지 않습니다!" : "ID doesn't exits!!");
 					flag = FALSE;

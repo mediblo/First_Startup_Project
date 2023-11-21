@@ -21,6 +21,7 @@ void draw_quit();
 bool popup_Explantion(char* msg);
 void warning_memonry();
 void draw_lil_box(Point p1, Point p2);
+bool popup_review(char* msg, float rate);
 
 void draw_box() {
 	for (int y = 0; y < Y_MAX; y++) {
@@ -190,7 +191,7 @@ bool popup_Explantion(char* msg) {
 	unsigned char key[2] = { 0, 0 };
 	int select = 0;
 
-	p.x = X_MAX / 2.5;
+	p.x = X_MAX / 2 - 9;
 	p.y = Y_MAX / 2 - 6;
 	Point p2 = { p.x + 19, p.y + 4 };
 	draw_lil_box(p, p2);
@@ -205,7 +206,7 @@ bool popup_Explantion(char* msg) {
 		}
 	}
 	while (1) {
-		p.x = X_MAX / 2.2 - 4;
+		p.x = X_MAX / 2 - 7;
 		p.y = Y_MAX / 1.6;
 		for (int i = 0; i < 2; i++, p.x+=8) {
 			gotoxy(p.x, p.y);
@@ -330,4 +331,71 @@ void draw_lil_box(Point p1, Point p2) {
 			else if (x == p1.x || x == p2.x-1) printf("│");
 		}
 	}
+}
+
+bool popup_review(char* msg, float rate) {
+	system("cls");
+	draw_box();
+	draw_title(set_language ? "확인 팝업" : "Check Popup");
+	char* str_k[2] = { "뒤로", "변경" };
+	char* str_e[2] = { "Back", "Change" };
+	Point p = { 0, 0 };
+
+	unsigned char key[2] = { 0, 0 };
+	int select = 0;
+
+	p.x = X_MAX / 2 - 9;
+	p.y = Y_MAX / 2 - 6;
+	Point p2 = { p.x + 19, p.y + 4 };
+	draw_lil_box(p, p2);
+
+	gotoxy(p.x, p.y);
+	for (int i = 0; msg[i] != '\0'; i++) {
+		printf("%c", msg[i]);
+		if ((i + 1) % 20 == 0) {
+			p.x = X_MAX / 2.5;
+			p.y++;
+			gotoxy(p.x, p.y);
+		}
+	}
+
+	p.x = X_MAX / 2.5,  p.y = Y_MAX / 1.8;
+	gotoxy(p.x, p.y);
+	printf("%s : %.1f", set_language ? "평점" : "Rate", rate);
+
+	while (1) {
+		p.x = X_MAX / 2 - 7;
+		p.y = Y_MAX / 1.6 + 1;
+		for (int i = 0; i < 2; i++, p.x += 8) {
+			gotoxy(p.x, p.y);
+			print_choice_lang(str_k[i], str_e[i], select == i);
+		}
+
+		key[0] = _getch();
+		if (key[0] == K_ARROW) {
+			key[1] = _getch();
+			switch (key[1]) {
+			case K_LEFT:
+				select = 0;
+				break;
+			case K_RIGHT:
+				select = 1;
+				break;
+			}
+		}
+		switch (key[0]) {
+		case 'a':
+		case 'A':
+			select = 0;
+			break;
+		case 'd':
+		case 'D':
+			select = 1;
+			break;
+		case K_ENTER:
+			system("cls");
+			return select ? true : false;
+		}
+	}
+	error(7);
 }

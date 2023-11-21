@@ -25,6 +25,8 @@ bool popup_Explantion(char* msg);
 bool URL_popup_Explantion(wchar_t* msg);
 // 작은 박스 그리는 함수
 void draw_lil_box(Point p1, Point p2);
+// 리뷰 팝업
+bool popup_review(char* msg, float rate);
 
 // 타이틀 선택 함수
 PNS select_title();
@@ -59,8 +61,10 @@ int input_genre(int old_genre);
 // 확장자 입력 함수
 int input_extension(int old_extension);
 // 가격 입력 함수
-// 정수가 아닌 입력이 들어오면 -1 반환
+// 정수가 아닌 입력이 들어오면 재호출
 int set_money();
+// 평점 입력 함수
+int set_rate();
 
 // 회원가입 정보 저장 콜백 함수
 // insert_user = 유저 / insert_seller = 판매자
@@ -78,10 +82,14 @@ void delete_application(short AID);
 // update_user = 유저 / update_seller = 판매자
 void update_call(short ID, char* nickname, short question, char* answer, bool lang,
 	void(*func)(short ID, char* nickname, short question, char* answer, bool lang));
+void update_user(short UID, char* nickname, short question, char* answer, bool lang);
+void update_seller(short SID, char* nickname, short question, char* answer, bool lang);
 // 업데이트 함수
 void update_user_money(short UID, int money, bool op);
 void update_user_aCount(short UID);
 void update_AID_D_count(short UID, short AID, bool op);
+void update_seller_revenue(short SID, int price);
+void update_revenue(short AID, int price);
 // 비밀번호 변경 콜백 함수
 // change_pw_user = 유저 / change_pw_seller = 판매자
 void change_pw(char* pw, short ID, void(*func)(char* pw));
@@ -97,10 +105,15 @@ void insert_application(
 // AID_D 관련 함수
 void insert_AID_D(short UID, AData AD);
 void delete_AID_D(short UID, short AID);
+// 리뷰 관련 함수
+void insert_review(short UID, short AID, char* comment, char rate);
+void update_review(short UID, short AID, char* comment, char rate);
 // 저장 폴더 제작 함수
 void make_temp_folder();
 // 파일 존재하는지 확인하는 함수
 bool is_hav_file(char extension, char* name);
+// 관리자 계정 가져오기 함수 [ 읽기 전용 ]
+Admin get_admin();
 
 // 에러 코드 처리 함수
 // 입력 : 에러 코드
@@ -120,9 +133,14 @@ bool is_new_user(char* id);
 bool is_new_seller(char* id);
 // 이미 가지고 있는 프로그램인가?
 bool is_hav_app(short UID, short AID);
+// 해당 프로그램에 대해 리뷰를 쓴 적이 있는가?
+bool is_write_review(short UID, short AID);
 // 비밀번호 인증 함수
 // 출력 : UID 존재함 / -1 존재안함
+// is_exit_id = 유저 / is_exit_id_seller = 판매자
+int is_exit_who(char* id, short quest, char* answer, int(*func)(char* id, short quest, char* answer));
 int is_exit_id(char* id, short quest, char* answer);
+int is_exit_id_seller(char* id, int quest, char* answer);
 // ID 반환 함수
 // 출력 : ID
 // get_UID = 유저 / get_SID = 판매자
@@ -138,7 +156,12 @@ Seller* get_data_seller(short SID);
 int get_money(short UID);
 wchar_t* get_URL(short AID);
 char get_extension(short AID);
-short get_app_count(short UID, short AID);
+char get_genre(short AID);
+char get_rate(short UID, short AID);
+char* get_comment(short UID, short AID);
+char* get_name(short UID);
+int get_revenue(short AID);
+int get_SID_from_AID(short AID);
 // output 전용 함수들
 char* output_extension(char extension);
 char* output_genre(char genre);
@@ -150,9 +173,26 @@ int check_url(wchar_t* URL, char extension, char* name);
 
 // 유저 마이 페이지 함수
 int my_page(short UID);
-// 판매자 마이페이지 함수
-int seller_page(short SID);
 // 유저 라이브러리 페이지 함수
 int library_page(short UID);
 // 유저 상점 페이지 함수
 int shop_page(short UID);
+// 유저 프로그램 페이지 함수
+void app_page(short UID, AData AD);
+// 판매자 마이페이지 함수
+int seller_page(short SID);
+// 판매자 라이브러리 페이지 함수
+int seller_library_page(short SID);
+// 판매자 프로그램 페이지 함수
+void seller_app_page(short SID, AData AD);
+// 리뷰 확인 페이지 함수
+void review_view_page(AData AD);
+
+// 어드민 로그인 확인 함수
+int is_admin(Account ac);
+// 유저/판매자/프로그램 수 확인 함수
+int get_num_who(char type);
+// 어드민 페이지 함수
+int admin_page();
+// 신고 활성화 체크 함수
+bool chk_report();

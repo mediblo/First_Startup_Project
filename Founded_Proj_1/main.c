@@ -18,6 +18,7 @@ int main() {
 	if (SID_count != 0)read_seller_file(); // NULL 읽기 방지
 	if (AID_count != 0)read_application_file(); // NULL 읽기 방지
 	if (AID_D_count != 0)read_AID_D_file(); // NULL 읽기 방지
+	if (RID_count != 0)read_review_file(); // NULL 읽기 방지
 
 	do {
 		
@@ -46,8 +47,23 @@ int main() {
 			}
 		}
 		else if (pns.type == 1) { // TYPE 1. 판매자
-			page = seller_page(pns.id);
+			switch (page) {
+			case -1:
+				flag = true;
+				break;
+			case 0:
+				page = seller_page(pns.id);
+				break;
+			case 1:
+				page = seller_library_page(pns.id);
+				break;
+			}
+			
 			if (page == -1) flag = true;
+		}
+		else if (pns.type == 2) {
+			page = admin_page();
+			break;
 		}
 		system("cls");
 		rewind(stdin); // 혹시 모를 버퍼 제거합시다.

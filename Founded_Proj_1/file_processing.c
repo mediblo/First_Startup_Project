@@ -10,19 +10,26 @@
 #include "source.h"
 #include "word_define.h"
 
+#pragma warning(disable:6011) // NULL 포인터 역참조 무시
+#pragma warning(disable:6001) // 초기화 안한 메모리 사용 무시
+
 // 전역 변수 모음
 short UID_count = 0;
 short SID_count = 0;
 short AID_count = 0;
 short AID_D_count = 0;
+short RID_count = 0;
 short UID_max = 0;
 short SID_max = 0;
 short AID_max = 0;
+
 User * root_user = NULL;
 Seller * root_seller = NULL;
 App * root_app = NULL;
 Review * root_review = NULL;
-AID_D* root_AID_D = NULL;	
+AID_D* root_AID_D = NULL;
+Admin ADM;
+
 bool set_language = true;
 
 ///////////////////
@@ -36,6 +43,8 @@ void save_application_file();
 void read_application_file();
 void save_AID_D_file();
 void read_AID_D_file();
+void save_review_file();
+void read_review_file();
 ///////////////////
 void update_seller_aCount(short SID, bool op);
 ///////////////////
@@ -51,7 +60,6 @@ void insert_user(char* id, char* pw, char* nickname, short question, char* answe
 	temp->question = question;
 	strcpy(temp->answer, answer);
 	temp->prog_count = 0;
-	temp->report_count = 0;
 	temp->money = 0;
 	temp->lang = set_language;
 	temp->next = NULL;
@@ -75,8 +83,7 @@ void insert_seller(char* id, char* pw, char* nickname, short question, char* ans
 	temp->question = question;
 	strcpy(temp->answer, answer);
 	temp->prog_count = 0;
-	temp->report_count = 0;
-	temp->money = 0;
+	temp->revenue = 0;
 	temp->lang = set_language;
 	temp->next = NULL;
 	temp->SID = SID_max++;
@@ -106,6 +113,8 @@ void insert_application(
 	temp->price = price;
 	temp->lang_set = lang_set;
 	temp->next = NULL;
+	temp->Rnext = NULL;
+	temp->revenue = 0;
 	temp->AID = AID_max++;
 	AID_count++;
 	update_seller_aCount(SID, true);
@@ -164,6 +173,53 @@ void insert_AID_D(short UID, AData AD) {
 	}
 
 }
+void insert_review(short UID, short AID, char* comment, char rate) {
+	Review* temp = (Review*)malloc(sizeof(Review));
+	temp->AID = AID;
+	temp->UID = UID;
+	temp->rate = rate;
+	temp->flag = true;
+	strcpy(temp->comment, comment);
+	temp->next = NULL;
+
+	if (root_review == NULL) root_review = temp;
+	else {
+		Review* prev = root_review;
+		bool flag = false;
+		for (Review* temp_2 = root_review; temp_2 != NULL; temp_2 = temp_2->next) {
+			if (temp_2->AID == AID) flag = true;
+			if (flag == true) {
+				if ((prev->AID != AID && temp_2->AID == AID) || (prev->AID == AID && temp_2->AID != AID)) {
+					temp->next = temp_2;
+					prev->next = temp;
+					break;
+				}
+				else if (temp_2->next == NULL) {
+					temp_2->next = temp;
+					break;
+				}
+			}
+			prev = temp_2;
+		}
+		if (flag == false) {
+			temp->next = root_review;
+			root_review = temp;
+		}
+	}
+	RID_count++;
+	save_review_file();
+	save_proj_file();
+
+	for (App* temp_A = root_app; temp_A != NULL; temp_A = temp_A->next) {
+		if (temp_A->AID == AID) {
+			if (temp_A->Rnext == NULL) {
+				temp_A->Rnext = temp;
+				save_application_file();
+			}
+			break;
+		}
+	}
+}
 ///////////////////
 void delete_call(short ID, void(*func)(short ID)) { func(ID); }
 void delete_user(short UID) {
@@ -171,14 +227,14 @@ void delete_user(short UID) {
 
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID) {
-			if (root_user == prev) prev = prev->next;
+			if (root_user == temp) root_user = temp->next;
 			else prev->next = temp->next;
 
 			AID_D* prev_A = temp->appData;
 			AID_D* temp_A = temp->appData;
 			bool flag = false, save_flag = true, prev_flag = false;
 
-			while(!flag || temp_A != NULL){
+			while(!flag || temp_A != NULL){ // 해당 유저가 가진 프로그램 정보 지우기
 				if (temp_A != prev_A) prev_A = prev_A->next;
 				if (temp_A->UID == UID) {
 					AID_D* free_temp = temp_A;
@@ -203,6 +259,17 @@ void delete_user(short UID) {
 				}
 				else temp_A = temp_A->next;
 			}
+
+			Review* temp_R = root_review;
+			bool review_flag = false;
+
+			while (temp_R != NULL) {
+				if (temp_R->UID == UID) {
+					temp_R->flag = false;
+					review_flag = true;
+				}
+				temp_R = temp_R->next;
+			}
 			
 			// flag가 두 개인 이유
 			//   save_flag 사용 이유
@@ -211,11 +278,11 @@ void delete_user(short UID) {
 			//   flag 사용 이유
 			//     AID_D의 변경 여부 [ 없으면 저장할 필요가 없음 ]
 			if (save_flag && flag) save_AID_D_file();
+
+			if (review_flag) save_review_file();
+
 			free(temp);
-			if (--UID_count != 0) {
-				root_user = prev;
-				save_user_file();
-			}
+			if (--UID_count != 0) save_user_file();
 			else root_user = NULL;
 			save_proj_file(); // count 리셋 저장
 			return;
@@ -244,10 +311,47 @@ void delete_application(short AID) {
 
 	for (App* temp = root_app; temp != NULL; temp = temp->next) {
 		if (temp->AID == AID) {
-			prev->next = temp->next;
+			if (root_app == prev) prev = prev->next;
+			else prev->next = temp->next;
+
+			Review* prev_R = temp->Rnext;
+			Review* temp_R = temp->Rnext;
+			bool flag = false, save_flag = true, prev_flag = false;
+
+			while (!flag || temp_R != NULL) { // 해당 프로그램 관련 리뷰 지우기
+				if (temp_R != prev_R) prev_R = prev_R->next;
+				if (temp_R->AID == AID) {
+					Review* free_temp = temp_R;
+					flag = true;
+					if (prev_R != temp_R) {
+						temp_R = temp_R->next;
+						prev_R->next = temp_R;
+					}
+					else {
+						temp_R = temp_R->next;
+						prev_R = prev_R->next;
+					}
+
+					free(free_temp);
+
+					if (--RID_count == 0) {
+						root_review = NULL;
+						save_flag = false;
+						break;
+					}
+					else root_review = prev_R;
+				}
+				else temp_R = temp_R->next;
+			}
+
+			if (save_flag && flag) save_review_file();
 			free(temp);
-			if (--AID_count != 0)save_application_file();
+			if (--AID_count != 0) {
+				root_app = prev;
+				save_application_file();
+			}
 			else root_app = NULL;
+			save_proj_file();
 			return;
 		}
 		prev = temp;
@@ -308,7 +412,16 @@ void update_AID_D_count(short UID, short AID, bool op) {
 		}
 	}
 	save_AID_D_file();
-	save_proj_file();
+}
+void update_review(short UID, short AID, char* comment, char rate) {
+	for (Review* temp = root_review; temp != NULL; temp = temp->next) {
+		if (temp->UID == UID && temp->AID == AID) {
+			temp->rate = rate;
+			strcpy(temp->comment, comment);
+			break;
+		}
+	}
+	save_review_file();
 }
 ///////////////////
 void update_user_money(short UID, int money, bool op) {
@@ -343,10 +456,28 @@ void update_seller_aCount(short SID, bool op) {
 	}
 	error(214);
 }
+void update_seller_revenue(short SID, int price) {
+	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
+		if (temp->SID == SID) {
+			temp->revenue += price;
+			save_seller_file();
+			return;
+		}
+	}
+}
+void update_revenue(short AID, int price) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			temp->revenue += price;
+			save_application_file();
+			return;
+		}
+	}
+}
 ///////////////////
 void change_pw(char* pw, short ID, void(*func)(char* pw)) { func(pw); }
 void change_pw_user(char* pw, short UID) {
-	for (User* temp = root_user; temp == NULL; temp = temp->next) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next) {
 		if (temp->UID == UID) {
 			temp->password = make_pw_num(pw);
 			return;
@@ -355,7 +486,7 @@ void change_pw_user(char* pw, short UID) {
 	error(220);
 }
 void change_pw_seller(char* pw, short SID) {
-	for (Seller* temp = root_seller; temp == NULL; temp = temp->next) {
+	for (Seller* temp = root_seller; temp != NULL; temp = temp->next) {
 		if (temp->SID == SID) {
 			temp->password = make_pw_num(pw);
 			return;
@@ -409,10 +540,13 @@ void save_proj_file() {
 	proj.count_uid = UID_count;
 	proj.count_sid = SID_count;
 	proj.count_aid = AID_count;
-	proj.cound_aid_d = AID_D_count;
+	proj.count_aid_d = AID_D_count;
+	proj.count_rid = RID_count;
 	proj.max_uid = UID_max;
 	proj.max_sid = SID_max;
 	proj.max_aid = AID_max;
+	strcpy(proj.admin.id, "asdf");
+	proj.admin.password = make_pw_num("1111");
 
 	if ((fp = fopen("data/proj.bin", "wb")) == NULL) {
 		system("mkdir data");
@@ -429,8 +563,6 @@ void read_proj_file() {
 
 	if ((fp = fopen("data/proj.bin", "rb")) == NULL) {
 		save_proj_file();
-		strcpy(proj.admin.id, "asdf");
-		proj.admin.password = make_pw_num("1111");
 		error(103);
 	}
 	else {
@@ -441,10 +573,12 @@ void read_proj_file() {
 	UID_count = proj.count_uid;
 	SID_count = proj.count_sid;
 	AID_count = proj.count_aid;
-	AID_D_count = proj.cound_aid_d;
+	AID_D_count = proj.count_aid_d;
+	RID_count = proj.count_rid;
 	UID_max = proj.max_uid;
 	SID_max = proj.max_sid;
 	AID_max = proj.max_aid;
+	ADM = proj.admin;
 }
 void save_seller_file() {
 	FILE* fp = NULL;
@@ -561,6 +695,44 @@ void read_AID_D_file() {
 		fclose(fp);
 	}
 }
+void save_review_file() {
+	FILE* fp = NULL;
+	Review* temp = root_review;
+
+	if ((fp = fopen("data/review.bin", "wb")) == NULL) {
+		system("mkdir data");
+		error(109);
+	}
+	else {
+		while (temp != NULL) {
+			fwrite(temp, sizeof(Review), 1, fp);
+			temp = temp->next;
+		}
+		fclose(fp);
+	}
+}
+void read_review_file() {
+	FILE* fp = NULL;
+	Review* temp = NULL; // 데이터를 받을 더미
+	Review** temp_root = &root_review; // 루트에 연결할 더미
+
+	if ((fp = fopen("data/review.bin", "rb")) == NULL) {
+		save_review_file();
+		error(109);
+	}
+	else {
+		while (1) {
+			temp = (Review*)malloc(sizeof(Review)); // 데이터 입력 받기 전 메모리 할당 [ 안하면 메모리 없는거! ]
+			if (fread(temp, sizeof(Review), 1, fp) != 1) { // 데이터 입력이 정상인지 판별
+				if (temp != NULL) free(temp); // NULL일 때 free하면 메모리 누수가 일어난다.
+				break; // 다 읽었으면 끝내
+			}
+			*temp_root = temp; // 데이터를 읽고
+			temp_root = &temp->next; // 다음 주소로 이동
+		}
+		fclose(fp);
+	}
+}
 ///////////////////
 void make_temp_folder() {
 	FILE* fp = NULL;
@@ -586,6 +758,9 @@ bool is_hav_file(char extension, char* name) {
 		return true;
 	}
 	// 에러 처리
+}
+Admin get_admin() {
+	return ADM;
 }
 ///////////////////
 void free_user() {
@@ -616,14 +791,23 @@ void free_AID_D() {
 		free(temp);
 	}
 }
+void free_review() {
+	while (root_review != NULL) {
+		Review* temp = root_review;
+		root_review = root_review->next;
+		free(temp);
+	}
+}
 void free_all() {
 	free_user();
 	free_seller();
 	free_application();
 	free_AID_D();
+	free_review();
 
 	if (UID_count == 0) remove("data/user.bin");
 	if (SID_count == 0) remove("data/seller.bin");
 	if (AID_count == 0) remove("data/application.bin");
 	if (AID_D_count == 0) remove("data/AID_D.bin");
+	if (RID_count == 0) remove("data/review.bin");
 }

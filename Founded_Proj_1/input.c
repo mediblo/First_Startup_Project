@@ -350,3 +350,46 @@ int set_money() {
 	}
 	else return atoi(money);
 }
+int set_rate() {
+	char* str = set_language ? "평점" : "RATE";
+	system("cls");
+	draw_box();
+	draw_title(str);
+
+	char rate[10];
+	char temp;
+	bool flag = false;
+	Point p = { (int)X_MAX / 3, (int)Y_MAX / 2 - 1 };
+
+	gotoxy(p.x, p.y);
+
+	printf("%s", set_language ? "숫자만 입력 가능" : "Only numbers can be entered");
+	gotoxy(p.x, ++p.y);
+	printf("%s", set_language ? "1 ~ 10의 값만 가능!" : "Only values 1 ~ 10 are allowed!");
+
+	gotoxy(p.x, ++p.y);
+	printf("%s : ", set_language ? "평점 입력" : "Input your rate");
+	scanf("%s", rate);
+
+	// 정수 확인
+	for (int i = 0; rate[i] != '\0'; i++) {
+		if (isdigit(rate[i]) == 0) {
+			flag = true;
+			break;
+		}
+	}
+	rewind(stdin);
+	system("cls");
+	if (flag) {
+		draw_message(set_language ? "입력하신 값은 숫자가 아닙니다!" : "The value you entered is not a number!");
+		return set_rate();
+	}
+	else {
+		temp = atoi(rate);
+		if (0 < temp && temp < 11) return atoi(rate);
+		else {
+			draw_message(set_language ? "1 ~ 10의 값만 가능!" : "Only values 1 ~ 10 are allowed!");
+			return set_rate();
+		}
+	}
+}

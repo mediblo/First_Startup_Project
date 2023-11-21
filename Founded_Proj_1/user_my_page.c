@@ -41,9 +41,6 @@ int my_page(short UID) {
 		if (set_language) printf("해금된 프로그램 갯수 : %d", temp->prog_count);
 		else printf("Number of Programs : %d", temp->prog_count);
 		gotoxy(p.x, p.y++);
-		if (set_language) printf("경고 횟수 : %d", temp->report_count);
-		else printf("Number of Reports : %d", temp->report_count);
-		gotoxy(p.x, p.y++);
 		if (set_language) printf("현재 자산 : %d", temp->money);
 		else printf("Money : %d", temp->money);
 

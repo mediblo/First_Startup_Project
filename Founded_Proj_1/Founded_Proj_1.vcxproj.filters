@@ -57,6 +57,21 @@
     <ClCompile Include="user_shop_page.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="user_app_page.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Review_View.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="seller_library_page.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="seller_app_page.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="admin_my_page.c">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source.h">

@@ -23,7 +23,9 @@ int check_pw_seller(short UID, char* pw);
 int is_who(Account ac, short type, int(*func)(Account ac, short type)) { return func(ac, type); }
 bool is_new_who(char* id, int(*func)(char*)) { return func(id); }
 int who_ID(Account ac, int(*func)(Account ac)) { return func(ac); }
+int is_exit_who(char* id, short quest, char* answer, int(*func)(char* id, short quest, char* answer)) { return func(id, quest, answer); }
 
+///////////////////////////유저 버전 함수들////////////
 int is_user(Account ac, short type) {
 	if (type != 0) return -2;
 	for (User* temp = root_user; temp != NULL; temp = temp->next) {
@@ -74,6 +76,11 @@ int get_money(short UID) {
 		if (temp->UID == UID) return temp->money;
 	// 에러 처리
 }
+char* get_name(short UID) {
+	for (User* temp = root_user; temp != NULL; temp = temp->next)
+		if (temp->UID == UID) return temp->nickname;
+	return set_language ? "탈퇴한 사용자" : "Withdrawn user";
+}
 ///////////////////////////판매자 버전 함수들////////////
 int is_seller(Account ac, short type) {
 	if (type != 1) return -2;
@@ -119,6 +126,12 @@ Seller* get_data_seller(short SID) {
 		if (temp->SID == SID) return temp;
 	// 에러 처리
 }
+int get_SID_from_AID(short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next)
+		if (temp->AID == AID)
+			return temp->SID;
+	// 에러 처리
+}
 ///////////////////////////프로그램 버전 함수들////////////
 wchar_t* get_URL(short AID) {
 	for (App* temp = root_app; temp != NULL; temp = temp->next)
@@ -130,9 +143,74 @@ char get_extension(short AID) {
 		if (temp->AID == AID) return temp->extension;
 	// 에러 처리
 }
+char get_genre(short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next)
+		if (temp->AID == AID) return temp->genre;
+	// 에러 처리
+}
+char get_rate(short UID, short AID) {
+	for (Review* temp = root_review; temp != NULL; temp = temp->next)
+		if (temp->UID == UID && temp->AID == AID)
+			return temp->rate;
+	// 에러 처리
+}
+char* get_comment(short UID, short AID) {
+	for (Review* temp = root_review; temp != NULL; temp = temp->next)
+		if (temp->UID == UID && temp->AID == AID)
+			return temp->comment;
+	// 에러 처리
+}
+int get_revenue(short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next)
+		if (temp->AID == AID)
+			return temp->revenue;
+	// 에러 처리
+}
 bool is_hav_app(short UID, short AID) {
 	for (AID_D* temp = root_AID_D; temp != NULL; temp = temp->next)
 		if (temp->UID == UID && temp->AD.AID == AID)
 			return true;
+	return false;
+}
+bool is_write_review(short UID, short AID) {
+	for (Review* temp = root_review; temp != NULL; temp = temp->next)
+		if (temp->UID == UID && temp->AID == AID)
+			return true;
+	return false;
+}
+///////////////////////////관리자 버전 함수들////////////
+int is_admin(Account ac) {
+	static char count = 0;
+	Admin ADM = get_admin();
+	if (strcmp(ADM.id, ac.id) == 0)
+		if (ADM.password == make_pw_num(ac.password)) {
+			set_language = true;
+			count = 0;
+			return 1;
+		}
+		else {
+			if (++count == 5) error(999);
+			return 0;
+		}
+	return -1;
+}
+int get_num_who(char type) { // 0 = 유저 / 1 = 판매자 / 2 = 프로그램
+	int cnt = 0;
+	switch(type){
+		case 0:
+			for (User* temp = root_user; temp != NULL; temp = temp->next, cnt++);
+			break;
+		case 1:
+			for (Seller* temp = root_seller; temp != NULL; temp = temp->next, cnt++);
+			break;
+		case 2:
+			for (App* temp = root_app; temp != NULL; temp = temp->next, cnt++);
+			break;
+	}
+	return cnt;
+}
+bool chk_report() {
+	for (App* temp = root_app; temp != NULL; temp = temp->next)
+		if (temp->is_report) return true;
 	return false;
 }

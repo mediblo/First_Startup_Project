@@ -67,6 +67,10 @@ void error(int code) {
 		case 220:
 		case 221:
 			printf("동적할당 Change 오류");
+			break;
+		case 999:
+			printf("관리자 로그인 5회 실패");
+			break;
 		default:
 			printf("다른 인위적 에러");
 	}

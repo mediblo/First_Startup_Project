@@ -33,11 +33,8 @@ int seller_page(short SID) {
 		if (set_language) printf("등록한 프로그램 갯수 : %d", temp->prog_count);
 		else printf("Number of Application Uploaded : %d", temp->prog_count);
 		gotoxy(p.x, p.y++);
-		if (set_language) printf("경고 횟수 : %d", temp->report_count);
-		else printf("Number of Reports : %d", temp->report_count);
-		gotoxy(p.x, p.y++);
-		if (set_language) printf("현재 수입 : %d", temp->money);
-		else printf("Money : %d", temp->money);
+		if (set_language) printf("현재 수입 : %d", temp->revenue);
+		else printf("Revenue : %d", temp->revenue);
 
 		p.y++;
 		for (int i = 0; i < 3; i++, p.y += 2) {
@@ -52,7 +49,6 @@ int seller_page(short SID) {
 			switch (key[1]) {
 			case K_F1:
 			case K_F2:
-			case K_F3:
 				page = key[1] - K_F1;
 				break;
 			case K_DOWN:
@@ -173,15 +169,7 @@ void upload_app(short SID) {
 					break;
 			}
 		}
-		// 디버그 및 제작용
-		/*
-		if (set_language)
-				if (i == select) select_color(kor_my[i]);
-				else printf("%s", kor_my[i]);
-			else
-				if (i == select) select_color(eng_my[i]);
-				else printf("%s", eng_my[i]);
-		*/
+
 		// 키 입력 이벤트 처리
 		key[0] = _getch();
 		if (key[0] == K_ARROW || key[0] == 0) {
@@ -189,9 +177,11 @@ void upload_app(short SID) {
 			switch (key[1]) {
 			case K_DOWN:
 				select = select == str_len - 1 ? str_len - 1 : select + 1;
+				if ((sel_lang == 1 && (select == 2 || select == 4)) || (sel_lang == 2 && (select == 1 || select == 3))) select++;
 				break;
 			case K_UP:
 				select = select == 0 ? 0 : select - 1;
+				if ((sel_lang == 1 && (select == 2 || select == 4)) || (sel_lang == 2 && (select == 1 || select == 3)) || select == 9) select--;
 				break;
 			case K_LEFT:
 				if (select == 10) select = 9;
@@ -206,14 +196,12 @@ void upload_app(short SID) {
 			case 's':
 			case 'S':
 				select = select == str_len - 1 ? str_len - 1 : select + 1;
-				if (sel_lang == 1 && (select == 2 || select == 4)) select++;
-				else if (sel_lang == 2 && (select == 1 || select == 3)) select++;
+				if ((sel_lang == 1 && (select == 2 || select == 4)) || (sel_lang == 2 && (select == 1 || select == 3))) select++;
 				break;
 			case 'w':
 			case 'W':
 				select = select == 0 ? 0 : select - 1;
-				if (sel_lang == 1 && (select == 2 || select == 4)) select--;
-				else if (sel_lang == 2 && (select == 1 || select == 3)) select--;
+				if ((sel_lang == 1 && (select == 2 || select == 4)) || (sel_lang == 2 && (select == 1 || select == 3)) || select == 9) select--;
 				break;
 			case 'a':
 			case 'A':

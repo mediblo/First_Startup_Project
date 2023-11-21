@@ -9,10 +9,9 @@
 #include "source.h"
 #include "word_define.h"
 
-int compare(const void* a, const void* b);
-void library_page_setting();
+void seller_library_page_setting();
 
-int library_page(short UID) {
+int seller_library_page(short SID) {
 	AData temp_AD[5];
 	Point p = { 20, 10 };
 	short page_num = 0, page = 1;
@@ -24,29 +23,34 @@ int library_page(short UID) {
 
 	char* sel_arrow[2] = { "<--", "-->" };
 
+	seller_library_page_setting();
 	while (page == 1) {
 		if (page_flag) {
 			temp_num = 0;
 			i = 0;
 			flag = false;
 
-			for (AID_D* temp = root_AID_D; temp != NULL && temp_num < 5; temp = temp->next) {
-				if (temp->UID == UID) {
-					if (page_num * 5 == i) flag = true;
-					i++;
-					if(flag){
-						strcpy(temp_AD[temp_num].name, temp->AD.name);
-						strcpy(temp_AD[temp_num].explanation, temp->AD.explanation);
-						temp_AD[temp_num].AID = temp->AD.AID;
-						temp_AD[temp_num++].price = temp->AD.price;
+			for (App* temp = root_app; temp != NULL; temp = temp->next, i++) {
+				if (page_num * 5 == i) flag = true;
+				if (flag) {
+					if (temp->lang_set == 0) {
+						strcpy(temp_AD[temp_num].name, set_language ? temp->kor_name : temp->eng_name);
+						strcpy(temp_AD[temp_num].explanation, set_language ? temp->kor_explanation : temp->eng_explanation);
 					}
+					else {
+						strcpy(temp_AD[temp_num].name, temp->lang_set == 1 ? temp->kor_name : temp->eng_name);
+						strcpy(temp_AD[temp_num].explanation, temp->lang_set == 1 ? temp->kor_explanation : temp->eng_explanation);
+					}
+					temp_AD[temp_num].AID = temp->AID;
+					temp_AD[temp_num++].price = temp->price;
 				}
+				if (temp_num == 5) break;
 			}
 
-			if (i == 0) { // 구입한 프로그램이 없을 때
+			if (i == 0) { // 등록한 프로그램이 없을 때
 				p.x = X_MAX / 2.8, p.y = Y_MAX / 2 - 1;
 				draw_box();
-				draw_button(p, set_language ? "구입한 프로그램이 없습니다." : "No purchased programs");
+				draw_button(p, set_language ? "등록한 프로그램이 없습니다." : "No Uploaded programs");
 				Sleep(1000);
 				return 0; // 마이페이지로 돌아가거라
 			}
@@ -57,7 +61,6 @@ int library_page(short UID) {
 		}
 
 		// 출력 부분
-		library_page_setting();
 		p.x = X_MAX - 1 - (strlen(set_language ? "F8 검색" : "F8 Search")), p.y = 1;
 		gotoxy(p.x, p.y);
 		choice_color(lightRed, lightGray, "F8 ");
@@ -96,8 +99,8 @@ int library_page(short UID) {
 			if ((i + 1) % 20 == 0) gotoxy(p.x, ++p.y);
 		}
 		p.x = X_MAX / 1.7, p.y = Y_MAX / 1.5;
-		gotoxy(p.x, p.y++); // 다운 가능한 카운트로 변경할 것
-		printf("%s : %d", set_language ? "다운 가능 횟수" : "Download Limit", temp_AD[sel].price);
+		gotoxy(p.x, p.y++);
+		printf("%s : %d", set_language ? "가격" : "Price", temp_AD[sel].price);
 
 		// 입력 부분
 		// 키 입력 이벤트 처리
@@ -108,7 +111,6 @@ int library_page(short UID) {
 			switch (key[1]) {
 			case K_F1:
 			case K_F2:
-			case K_F3:
 				page = key[1] - K_F1;
 				break;
 			case K_DOWN:
@@ -122,7 +124,7 @@ int library_page(short UID) {
 					page_num--;
 					page_flag = true;
 					system("cls");
-					library_page_setting();
+					seller_library_page_setting();
 				}
 				break;
 			case K_RIGHT:
@@ -130,7 +132,7 @@ int library_page(short UID) {
 					page_num++;
 					page_flag = true;
 					system("cls");
-					library_page_setting();
+					seller_library_page_setting();
 				}
 				break;
 			}
@@ -151,7 +153,7 @@ int library_page(short UID) {
 					page_num--;
 					page_flag = true;
 					system("cls");
-					library_page_setting();
+					seller_library_page_setting();
 				}
 				break;
 			case 'd':
@@ -160,12 +162,13 @@ int library_page(short UID) {
 					page_num++;
 					page_flag = true;
 					system("cls");
-					library_page_setting();
+					seller_library_page_setting();
 				}
 				break;
 			case K_ENTER:
-				app_page(UID, temp_AD[sel]);
-				library_page_setting();
+				// seller_app_page로 변경할 것
+				seller_app_page(SID, temp_AD[sel]);
+				seller_library_page_setting();
 				break;
 			}
 		}
@@ -173,24 +176,13 @@ int library_page(short UID) {
 	return page;
 }
 // 기본 UI 출력
-void library_page_setting() {
+void seller_library_page_setting() {
 	Point p;
-	draw_page();
+	draw_seller_page();
 	draw_box();
 	if (set_language) draw_title("라이브러리 페이지");
 	else draw_title("LIBRARY PAGE");
 	p.x = X_MAX / 1.7, p.y = Y_MAX / 2.3;
 	Point p2 = { p.x + 19, p.y + 4 };
 	draw_lil_box(p, p2);
-}
-
-// stdlib.h qsort() 사용하기 위한 함수
-int compare(const void* a, const void* b) {
-	int num1 = *(int*)a;
-	int num2 = *(int*)b;
-	if (num1 > num2)       // a가 b보다 클 경우
-		return -1;
-	if (num1 < num2)       // a가 b보다 작을 경우
-		return 1;
-	return 0;              // a와 b가 같을 경우
 }
