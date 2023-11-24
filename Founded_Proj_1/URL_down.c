@@ -52,11 +52,11 @@ int check_url(wchar_t* URL, char extension, char* name) {
 /*
 * URL 다운로드 원문?
 int main() {
-	LPCWSTR link = L"https://o365seowon-my.sharepoint.com/:u:/g/personal/jjssog_office_seowon_ac_kr/EYCBaYNFMdVKhOWDSkX_N08Bk_JmDxyWSYip0X8ms9SlPQ?e=qzGII7&download=1";
+	LPCWSTR link = L"https://o365seowon-my.sharepoint.com/:u:/g/personal/jjssog_office_seowon_ac_kr/EYCBaYNFMdVKhOWDSkX_N08Bk_JmDxyWSYip0X8ms9SlPQ?e=mpmFKf&download=1";
 
 	URLDownloadToFile(0, link, L"C:/Temp/test.zip", 0, 0);
 	printf("Done");
 	return 0;
 }
 */
-// https://o365seowon-my.sharepoint.com/:u:/g/personal/jjssog_office_seowon_ac_kr/ES18Bz_4tfZIqsZnNUf0ahMBdEDGUbCDiGsA0O6caGSPTw?e=2bLRff&download=1
+// https://o365seowon-my.sharepoint.com/:u:/g/personal/jjssog_office_seowon_ac_kr/EYCBaYNFMdVKhOWDSkX_N08Bk_JmDxyWSYip0X8ms9SlPQ?e=mpmFKf&download=1

@@ -32,7 +32,7 @@ int shop_page(short UID) {
 	char* kor_app_sel[3] = { "리뷰", "다운", "추가" };
 	char* eng_app_sel[3] = { "Review", "Download", "Increased" };
 
-	shop_page_setting(false);
+	
 	
 	while (page == 2) {
 		if (page_flag) {
@@ -44,6 +44,7 @@ int shop_page(short UID) {
 			// 페이지 인식은 어떻게?
 			for (App* temp = root_app; temp != NULL; temp = temp->next, i++) {
 				if (page_num * 5 == i) flag = true;
+				if (temp->is_disable) { i--; continue; }
 				if (flag) {
 					if (temp->lang_set == 0) {
 						strcpy(temp_AD[temp_num].name, set_language ? temp->kor_name : temp->eng_name);
@@ -59,11 +60,19 @@ int shop_page(short UID) {
 				}
 				if (temp_num == 5) break;
 			}
-			if (temp_num != 5) for (int j = temp_num; j < 5; j++) temp_AD[j].AID = -1;
+			if (temp_num == 0) {
+				p.x = X_MAX / 2.8, p.y = Y_MAX / 2 - 1;
+				draw_box();
+				draw_button(p, set_language ? "등록된 프로그램이 없습니다." : "No Uploaded programs");
+				Sleep(1000);
+				return 0; // 마이페이지로 돌아가거라
+			}
+			else if (temp_num != 5) for (int j = temp_num; j < 5; j++) temp_AD[j].AID = -1;
 			page_flag = false;
 
 			if (temp_num - 1 <= sel) sel = temp_num - 1;
 			cnt = AID_count % 5 == 0 ? AID_count / 5 : AID_count / 5 + 1;
+			shop_page_setting(false);	
 		}
 
 		// 출력 부분
@@ -86,10 +95,9 @@ int shop_page(short UID) {
 						print_choice_lang(kor_app_sel[j], eng_app_sel[j], j == app_sel);
 						printf(" ");
 					}
-					printf("]                        ");
+					printf("]");
 				}
-				else if (is_hav[i]) printf(" [H]                   ");
-				else printf("                    ");
+				else if (is_hav[i]) printf(" [H]");
 			}
 		}
 
@@ -145,7 +153,6 @@ int shop_page(short UID) {
 				if (page_num != 0 && !app_flag) {
 					page_num--;
 					page_flag = true;
-					system("cls");
 					shop_page_setting(app_flag);
 				}
 				else if (app_flag) app_sel = 0;
@@ -154,7 +161,6 @@ int shop_page(short UID) {
 				if (cnt != page_num + 1 && !app_flag) {
 					page_num++;
 					page_flag = true;
-					system("cls");
 					shop_page_setting(app_flag);
 				}
 				else if (app_flag) app_sel = is_hav[sel] ? 2 : 1;
@@ -176,7 +182,6 @@ int shop_page(short UID) {
 				if (page_num != 0 && !app_flag) {
 					page_num--;
 					page_flag = true;
-					system("cls");
 					shop_page_setting(app_flag);
 				}
 				else if (app_flag) app_sel = 0;
@@ -186,13 +191,15 @@ int shop_page(short UID) {
 				if (cnt != page_num + 1 && !app_flag) {
 					page_num++;
 					page_flag = true;
-					system("cls");
 					shop_page_setting(app_flag);
 				}
 				else if (app_flag) app_sel = is_hav[sel] ? 2 : 1;
 				break;
 			case K_ESC:
-				if (app_flag) app_flag = false;
+				if (app_flag) {
+					app_flag = false;
+					app_sel = 0;
+				}
 				shop_page_setting(app_flag);
 				break;
 			case K_ENTER:
@@ -225,8 +232,12 @@ int shop_page(short UID) {
 								page_flag = true;
 								draw_message(set_language ? "다운로드 완료." : "Download Complete");
 							}
-							else // 나머진 실패
+							else {// 나머진 실패
+								Rep_data temp_repData = {UID, "다운로드 실패", 7};
+								update_repData(temp_repData, temp_AD[sel].AID);
+								page_flag = true;
 								draw_message(set_language ? "다운로드 실패." : "Download Fail");
+							}
 						}
 					}
 				}
@@ -241,13 +252,8 @@ int shop_page(short UID) {
 // 기본 UI 출력
 void shop_page_setting(bool app_flag) {
 	Point p;
-	if (app_flag) {
-		p.x = 2, p.y = 1;
-		gotoxy(p.x, p.y);
-		choice_color(lightRed, lightGray, "ESC ");
-		choice_color(black, lightGray, set_language ? "뒤로가기" : "Back");
-		printf("                              ");
-	}
+	system("cls");
+	if (app_flag) draw_ESC();
 	else draw_page();
 	draw_box();
 	if (set_language) draw_title("상점 페이지");

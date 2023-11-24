@@ -97,7 +97,7 @@ int library_page(short UID) {
 		}
 		p.x = X_MAX / 1.7, p.y = Y_MAX / 1.5;
 		gotoxy(p.x, p.y++); // 다운 가능한 카운트로 변경할 것
-		printf("%s : %d", set_language ? "다운 가능 횟수" : "Download Limit", temp_AD[sel].price);
+		printf("%s : %03d", set_language ? "다운 가능 횟수" : "Download Limit", temp_AD[sel].price);
 
 		// 입력 부분
 		// 키 입력 이벤트 처리

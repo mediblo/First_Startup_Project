@@ -60,9 +60,9 @@ typedef struct review_data {
 }RData;
 
 typedef struct report_data {
+	short UID; // 중복을 방지하기 위한 UID 저장
 	char comment[101]; // 신고 사유
 	char reason; // 신고 이유
-	struct report_data* next; // リンクドリスト
 } Rep_data;
 
 // TYPE 1. 사용자 구조체
@@ -117,9 +117,10 @@ typedef struct application{
 	char lang_set; // 지원 언어 [ 0 = 둘 다, 1 = 한국어, 2 = 영어 ]
 	short report_count; // 신고 몇번 먹음?
 	bool is_report; // 지금 신고당했나요? [ 넹 / 아뇽 ]
+	bool is_disable; // 지금 못 쓰나요? [ 넹 / 아뇽 ]
 	struct application* next; // 연결리스트
 	Review* Rnext; // 리뷰 연결리스트
-	Rep_data* repNext; // 신고 연결리스트
+	Rep_data repData[10]; // 신고 목록 [ 최대 10개로 한정 ]
 } App;
 
 // 프로그램 내부 주요 정보 구조체

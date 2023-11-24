@@ -83,10 +83,7 @@ void seller_app_page_setting(AData AD) {
 	draw_box();
 	draw_title(AD.name);
 
-	p.x = 2, p.y = 1;
-	gotoxy(p.x, p.y);
-	choice_color(lightRed, lightGray, "ESC ");
-	choice_color(black, lightGray, set_language ? "뒤로가기" : "Back");
+	draw_ESC();
 
 	p.x = X_MAX / 8, p.y = Y_MAX / 3.5;
 	gotoxy(p.x, p.y);

@@ -14,16 +14,19 @@ void app_page_setting(AData AD);
 void app_page(short UID, AData AD) {
 	Point p = { 0,0 };
 	bool review_flag = is_write_review(UID, AD.AID);
+	bool report_flag = is_report_write(AD.AID, UID);
 	bool flag = true, chk_url = false, chk_review = true;
 	unsigned char key[2] = { 0,0 };
 	int sel = 0;
 	char rate = 0;
 	char temp_review[101] = "";
+	char temp_report = 0;
 
 	if (review_flag) {
 		rate = get_rate(UID, AD.AID);
 		strcpy(temp_review, get_comment(UID, AD.AID));
 	}
+	if (report_flag) temp_report = get_report_reason(AD.AID, UID);
 
 	system("cls");
 	app_page_setting(AD);
@@ -105,7 +108,8 @@ void app_page(short UID, AData AD) {
 						review_flag = true;
 						break;
 					case 3: // 신고 하기
-						flag = false;
+						temp_report = input_report(temp_report, UID, AD.AID, report_flag);
+						report_flag = true;
 						break;
 				}
 				app_page_setting(AD);
@@ -113,7 +117,6 @@ void app_page(short UID, AData AD) {
 			}
 		}
 	}
-
 	system("cls");
 }
 
@@ -124,10 +127,7 @@ void app_page_setting(AData AD) {
 	draw_box();
 	draw_title(AD.name);
 
-	p.x = 2, p.y = 1;
-	gotoxy(p.x, p.y);
-	choice_color(lightRed, lightGray, "ESC ");
-	choice_color(black, lightGray, set_language ? "뒤로가기" : "Back");
+	draw_ESC();
 
 	p.x = X_MAX / 8, p.y = Y_MAX / 3.5;
 	gotoxy(p.x, p.y);

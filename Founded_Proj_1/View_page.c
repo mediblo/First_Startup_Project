@@ -152,3 +152,131 @@ void review_view_page(AData AD) {
 	}
 	system("cls");
 }
+
+void report_view_page(short AID, char* A_name) {
+	Rep_data temp_RD[3];
+	short sel = 0, i = 0, temp_num = 0, page_num = 0;
+	bool page_flag = true, flag = false, view_flag = true;
+	Point p = { 0,0 };
+	short r_count = 0;
+	char* sel_arrow[2] = { "<--", "-->" };
+	unsigned char key[2] = { 0, 0 };
+
+	while (view_flag) {
+		if (page_flag) {
+			temp_num = 0;
+			i = 0;
+			flag = false;
+			r_count = 0;
+
+			for (App* temp = root_app; temp != NULL; temp = temp->next) {
+				if (temp->AID == AID) {
+					for(int l=0; l<10; l++){
+						if (temp->repData[l].UID == -1) break;
+						r_count++;
+						if (page_num * 3 == i) flag = true;
+						i++;
+						if (flag && temp_num < 3) {
+							strcpy(temp_RD[temp_num].comment, temp->repData[l].comment);
+							temp_RD[temp_num++].reason = temp->repData[l].reason;
+						}
+					}
+				}
+			}
+
+			if (temp_num != 3) for (int j = temp_num; j < 3; j++) temp_RD[j].UID = -1;
+			page_flag = false;
+
+			if (temp_num - 1 <= sel) sel = temp_num - 1;
+
+			// 기본 출력
+			system("cls");
+			draw_box();
+			draw_title(A_name);
+			draw_ESC();
+
+			r_count = r_count % 3 == 0 ? r_count / 3 : r_count / 3 + 1;
+
+			// 설명창 인식
+			// 기존 설명창 제거
+			for (int j = 0; j < 3; j++) {
+				if (temp_RD[j].UID == -1) continue;
+
+				p.x = X_MAX * (0.1 + (0.3 * j)), p.y = Y_MAX / 2.3 - 3;
+				gotoxy(p.x, p.y++);
+				printf("%s      ", output_report(temp_RD[j].reason));
+				gotoxy(p.x, p.y++);
+				printf("No.%02d", j + ((r_count - 1) * 3) + 1);
+				p.y++;
+
+				Point p2 = { p.x + 19, p.y + 4 };
+				draw_lil_box(p, p2);
+
+				gotoxy(p.x, p.y);
+				for (int i = 0; i < 100; i++) {
+					printf(" ");
+					if ((i + 1) % 20 == 0) gotoxy(p.x, ++p.y);
+				}
+				p.x = X_MAX * (0.1 + (0.3 * j)), p.y = Y_MAX / 2.3;
+				gotoxy(p.x, p.y);
+				for (int i = 0; temp_RD[j].comment[i] != '\0'; i++) {
+					printf("%c", temp_RD[j].comment[i]);
+					if ((i + 1) % 20 == 0) gotoxy(p.x, ++p.y);
+				}
+			}
+
+			p.x = X_MAX * 0.5 - 2, p.y = Y_MAX - 7;
+			for (int i = 0; i < 2; i++, p.x += 4) {
+				gotoxy(p.x, p.y);
+				if ((page_num != 0 && i == 0) || (page_num + 1 != r_count && i == 1))
+					printf("%s", sel_arrow[i]);
+				else printf("   ");
+			}
+
+			p.x = X_MAX * 0.5 - 4, p.y += 2;
+			gotoxy(p.x, p.y);
+			printf("[ %03d/%03d ]", page_num + 1, r_count);
+		}
+
+		key[0] = _getch();
+		if (key[0] == K_ARROW) {
+			key[1] = _getch();
+			switch (key[1]) {
+			case K_LEFT:
+				if (page_num != 0) {
+					page_num--;
+					page_flag = true;
+				}
+				break;
+			case K_RIGHT:
+				if (page_num + 1 != r_count) {
+					page_num++;
+					page_flag = true;
+				}
+				break;
+			}
+		}
+		else {
+			switch (key[0]) {
+			case 'a':
+			case 'A':
+				if (page_num != 0) {
+					page_num--;
+					page_flag = true;
+				}
+				break;
+			case 'd':
+			case 'D':
+				if (page_num + 1 != r_count) {
+					page_num++;
+					page_flag = true;
+				}
+				break;
+			case K_ESC:
+				view_flag = false;
+				break;
+			}
+		}
+	}
+	system("cls");
+}

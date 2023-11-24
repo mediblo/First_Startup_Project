@@ -114,6 +114,9 @@ void insert_application(
 	temp->lang_set = lang_set;
 	temp->next = NULL;
 	temp->Rnext = NULL;
+	temp->is_disable = false;
+	temp->is_report = false;
+	for(int i=0; i<10; i++)	temp->repData[i].UID = -1;
 	temp->revenue = 0;
 	temp->AID = AID_max++;
 	AID_count++;
@@ -230,36 +233,37 @@ void delete_user(short UID) {
 			if (root_user == temp) root_user = temp->next;
 			else prev->next = temp->next;
 
-			AID_D* prev_A = temp->appData;
-			AID_D* temp_A = temp->appData;
 			bool flag = false, save_flag = true, prev_flag = false;
-
-			while(!flag || temp_A != NULL){ // 해당 유저가 가진 프로그램 정보 지우기
-				if (temp_A != prev_A) prev_A = prev_A->next;
-				if (temp_A->UID == UID) {
-					AID_D* free_temp = temp_A;
-					flag = true;
-					if (prev_A != temp_A) {
-						temp_A = temp_A->next;
-						prev_A->next = temp_A;
-					}
-					else {
-						temp_A = temp_A->next;
-						prev_A = prev_A->next;
-					}
+			if(temp->appData != NULL) {
+				AID_D* prev_A = root_AID_D;
+				AID_D* temp_A = root_AID_D;
+				
+				while(!flag || temp_A != NULL){ // 해당 유저가 가진 프로그램 정보 지우기
+					if (temp_A != prev_A) prev_A = prev_A->next;
+					if (temp_A->UID == UID) {
+						AID_D* free_temp = temp_A;
+						flag = true;
+						if (prev_A != temp_A) {
+							temp_A = temp_A->next;
+							prev_A->next = temp_A;
+						}
+						else {
+							temp_A = temp_A->next;
+							prev_A = prev_A->next;
+						}
 					
-					free(free_temp);
+						free(free_temp);
 
-					if (--AID_D_count == 0) {
-						root_AID_D = NULL;
-						save_flag = false;
-						break;
+						if (--AID_D_count == 0) {
+							root_AID_D = NULL;
+							save_flag = false;
+							break;
+						}
+						else root_AID_D = prev_A;
 					}
-					else root_AID_D = prev_A;
+					else temp_A = temp_A->next;
 				}
-				else temp_A = temp_A->next;
 			}
-
 			Review* temp_R = root_review;
 			bool review_flag = false;
 
@@ -474,6 +478,44 @@ void update_revenue(short AID, int price) {
 		}
 	}
 }
+void update_repData(Rep_data RD, short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			for (int i = 0; i < 10; i++) {
+				if (temp->repData[i].UID == -1 || temp->repData[i].UID == RD.UID) {
+					temp->repData[i] = RD;
+					temp->is_disable = true;
+					temp->is_report = false;
+					save_application_file();
+					return;
+				}
+			}
+		}
+	}
+}
+void update_app_disable(short AID, bool flag) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			temp->is_disable = flag ? true : false;
+			for (int i = 0; i < 10; i++) {
+				temp->repData[i].UID = -1;
+				temp->repData[i].reason = 0;
+				strcpy(temp->repData[i].comment, "");
+			}
+			save_application_file();
+		}
+	}
+	// 에러 처리
+}
+void update_cls_repData(short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			for (int i = 0; i < 10; i++) temp->repData[i].UID = -1;
+			save_application_file();
+		}
+	}
+	// 에러 처리
+}
 ///////////////////
 void change_pw(char* pw, short ID, void(*func)(char* pw)) { func(pw); }
 void change_pw_user(char* pw, short UID) {
@@ -546,7 +588,7 @@ void save_proj_file() {
 	proj.max_sid = SID_max;
 	proj.max_aid = AID_max;
 	strcpy(proj.admin.id, "asdf");
-	proj.admin.password = make_pw_num("1111");
+	proj.admin.password = make_pw_num("1234");
 
 	if ((fp = fopen("data/proj.bin", "wb")) == NULL) {
 		system("mkdir data");
@@ -759,9 +801,7 @@ bool is_hav_file(char extension, char* name) {
 	}
 	// 에러 처리
 }
-Admin get_admin() {
-	return ADM;
-}
+Admin get_admin() { return ADM; }
 ///////////////////
 void free_user() {
 	while (root_user != NULL) {

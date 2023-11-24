@@ -156,6 +156,27 @@ void upload_app(short SID) {
 						}
 						else printf(" : %s", temp_NE);
 					break;
+				case 3:
+					if (flag_EK)
+						if (sel_lang == 2) {
+							textcolor(darkGray, black);
+							printf(" [Check]");
+							textcolor(white, black);
+						}
+						else printf(" [Check]");
+					break;
+				case 4:
+					if (flag_EE)
+						if (sel_lang == 1) {
+							textcolor(darkGray, black);
+							printf(" [Check]");
+							textcolor(white, black);
+						}
+						else printf(" [Check]");
+					break;
+				case 5:
+					if (flag_URL) printf(" [Check]");
+					break;
 				case 6:
 					printf(" : %s", output_genre(temp_genre));
 					break;
@@ -164,8 +185,6 @@ void upload_app(short SID) {
 					break;
 				case 8:
 					if(temp_money != -1) printf(" : %d%s", temp_money, set_language ? "¿ø" : "Won");
-					break;
-				case 5:
 					break;
 			}
 		}

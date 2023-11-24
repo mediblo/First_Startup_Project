@@ -62,8 +62,14 @@ int main() {
 			if (page == -1) flag = true;
 		}
 		else if (pns.type == 2) {
-			page = admin_page();
-			break;
+			switch(page){
+			case -1:
+				flag = true;
+				break;
+				case 0:
+					page = admin_page();
+				break;
+			}
 		}
 		system("cls");
 		rewind(stdin); // 혹시 모를 버퍼 제거합시다.

@@ -15,6 +15,8 @@ void draw_message(char* message);
 void draw_page();
 // 판매자 페이지 설명 함수
 void draw_seller_page();
+// 뒤로가기 설명 함수
+void draw_ESC();
 // 작은 버튼 제작 함수
 void draw_button(Point p, char* str);
 // 종료 출력 함수
@@ -27,6 +29,8 @@ bool URL_popup_Explantion(wchar_t* msg);
 void draw_lil_box(Point p1, Point p2);
 // 리뷰 팝업
 bool popup_review(char* msg, float rate);
+// 신고 팝업
+bool popup_report(short reason);
 
 // 타이틀 선택 함수
 PNS select_title();
@@ -60,11 +64,17 @@ int select_question(int old_select);
 int input_genre(int old_genre);
 // 확장자 입력 함수
 int input_extension(int old_extension);
+// 신고 입력 함수
+int input_report(int old_report, short UID, short AID, bool flag);
 // 가격 입력 함수
 // 정수가 아닌 입력이 들어오면 재호출
 int set_money();
 // 평점 입력 함수
 int set_rate();
+// output 전용 함수들
+char* output_extension(char extension);
+char* output_genre(char genre);
+char* output_report(char report);
 
 // 회원가입 정보 저장 콜백 함수
 // insert_user = 유저 / insert_seller = 판매자
@@ -90,6 +100,9 @@ void update_user_aCount(short UID);
 void update_AID_D_count(short UID, short AID, bool op);
 void update_seller_revenue(short SID, int price);
 void update_revenue(short AID, int price);
+void update_repData(Rep_data RD, short AID);
+void update_app_disable(short AID, bool flag);
+void update_cls_repData(short AID);
 // 비밀번호 변경 콜백 함수
 // change_pw_user = 유저 / change_pw_seller = 판매자
 void change_pw(char* pw, short ID, void(*func)(char* pw));
@@ -135,6 +148,9 @@ bool is_new_seller(char* id);
 bool is_hav_app(short UID, short AID);
 // 해당 프로그램에 대해 리뷰를 쓴 적이 있는가?
 bool is_write_review(short UID, short AID);
+// 해당 프로그램에 대해 신고를 한 적이 있는가?
+// 처리안되어있으면 true 처리되면 false
+bool is_report_write(short AID, short UID);
 // 비밀번호 인증 함수
 // 출력 : UID 존재함 / -1 존재안함
 // is_exit_id = 유저 / is_exit_id_seller = 판매자
@@ -162,9 +178,7 @@ char* get_comment(short UID, short AID);
 char* get_name(short UID);
 int get_revenue(short AID);
 int get_SID_from_AID(short AID);
-// output 전용 함수들
-char* output_extension(char extension);
-char* output_genre(char genre);
+short get_report_reason(short AID, short UID);
 
 // 비밀번호 암호화 함수
 int make_pw_num(char* password);
@@ -194,5 +208,13 @@ int is_admin(Account ac);
 int get_num_who(char type);
 // 어드민 페이지 함수
 int admin_page();
-// 신고 활성화 체크 함수
-bool chk_report();
+// 신고 활성화 체크 함수 [ T = is_report / F = is_disable ]
+bool chk_report(bool flag);
+// AID 리스트 반환 함수 [ T = 신고 먹은 놈들만 / F = 비활성화 친구들만 ] / 나머진 -1
+void get_AID_list(short AID_list[], bool flag);
+// aName 리스트 반환 함수s
+char* get_aNameList(short AID_list[], char aNameList[][20]);
+// 신고 사유 확인 함수
+void report_view_page(short AID, char* A_name);
+// 간이 신고 종류 카운트 함수
+short* get_rep_count(short rep_count[], short AID);

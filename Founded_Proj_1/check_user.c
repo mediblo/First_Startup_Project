@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 // 유저 확인 함수들
 #include <stdio.h>
 #include <Windows.h>
@@ -80,6 +81,30 @@ char* get_name(short UID) {
 	for (User* temp = root_user; temp != NULL; temp = temp->next)
 		if (temp->UID == UID) return temp->nickname;
 	return set_language ? "탈퇴한 사용자" : "Withdrawn user";
+}
+bool is_report_write(short AID, short UID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			for (int i = 0; i < 10; i++) {
+				if (temp->repData[i].UID == -1) return false;
+				else if (temp->repData[i].UID == UID) return true;
+			}
+			break;
+		}
+	}
+	return false;
+}
+short get_report_reason(short AID, short UID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			for (int i = 0; i < 10; i++) {
+				if (temp->repData[i].UID == -1) return 0;
+				else if (temp->repData[i].UID == UID) return temp->repData[i].reason;
+			}
+			break;
+		}
+	}
+	return 0;
 }
 ///////////////////////////판매자 버전 함수들////////////
 int is_seller(Account ac, short type) {
@@ -209,8 +234,37 @@ int get_num_who(char type) { // 0 = 유저 / 1 = 판매자 / 2 = 프로그램
 	}
 	return cnt;
 }
-bool chk_report() {
+bool chk_report(bool flag) {
 	for (App* temp = root_app; temp != NULL; temp = temp->next)
-		if (temp->is_report) return true;
+		if (flag && temp->is_report) return true;
+		else if (!flag && temp->is_disable) return true;
 	return false;
+}
+void get_AID_list(short AID_list[], bool flag) {
+	int num=0;
+	for (int i = 0; i < 12; i++) AID_list[i] = -1; // 초기화
+
+	for(App* temp = root_app; temp != NULL; temp= temp->next)
+		if (flag && temp->is_report) AID_list[num++] = temp->AID;
+		else if(!flag && temp->is_disable) AID_list[num++] = temp->AID;
+}
+char* get_aNameList(short AID_list[], char aNameList[][20]) {
+	char i = 0;
+	for (App* temp = root_app; temp != NULL && i < 12; temp = temp->next) {
+		if (temp->AID == AID_list[i]) {
+			strcpy(aNameList[i++], temp->lang_set == 2 ? temp->eng_name : temp->kor_name);
+		}
+	}
+	for (; i < 12; i++) strcpy(aNameList[i], "-1");
+}
+short* get_rep_count(short rep_count[], short AID) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		if (temp->AID == AID) {
+			for (int i = 0; i < 10; i++) {
+				if (temp->repData[i].UID == -1) break;
+				else rep_count[temp->repData[i].reason]++;
+			}
+			break;
+		}
+	}
 }

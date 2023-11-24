@@ -22,7 +22,7 @@ void textcolor(Color_num foreground, Color_num background) {
 void gotoxy(int x, int y) {
 	COORD pos = { x,y };
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
-}
+	}
 
 void select_color(char* str) {
 	Color_num t_color = black, bg_color = white;

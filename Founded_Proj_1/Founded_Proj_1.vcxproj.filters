@@ -60,7 +60,7 @@
     <ClCompile Include="user_app_page.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Review_View.c">
+    <ClCompile Include="View_page.c">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="seller_library_page.c">
@@ -82,11 +82,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="History_Or_Logs.txt">
-      <Filter>소스 파일</Filter>
-    </Text>
+    <None Include="..\README.md" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\README.md" />
+    <Text Include="History_Or_Logs.txt" />
   </ItemGroup>
 </Project>

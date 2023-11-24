@@ -164,7 +164,7 @@ int input_genre(int old_genre) {
 							"etc.", "Back" };
 
 	int gen_count = 13;
-	unsigned key[2] = { 0,0 };
+	unsigned char key[2] = { 0,0 };
 
 	Point p = { 0, 0 };
 	
@@ -246,7 +246,7 @@ int input_extension(int old_extension) {
 								"pdf","Back" };
 
 	int ext_count = 17;
-	unsigned key[2] = { 0,0 };
+	unsigned char key[2] = { 0,0 };
 
 	Point p = { 0, 0 };
 
@@ -313,6 +313,95 @@ char* output_extension(char extension) {
 								"pptx","xlex", "txt", "hwp", "doc",
 								"pdf" };
 	return str_extension[extension];
+}
+
+// 사기, 망가짐, 아동 학대
+// 법률 위반, 명예 훼손, 성인물
+// 해로움, 기타
+int input_report(int old_report, short UID, short AID, bool flag) {
+	if (flag) {
+		flag = popup_report(old_report);
+		if (!flag) return old_report;
+	}
+	int sel_report = 0;
+	char* kor_report[9] = {"사기", "망가짐", "아동 학대", "법률 위반", "명예 훼손",
+							"성인물", "해로움", "기타", "취소"};
+	char* eng_report[9] = {"Fraud", "Broken", "Child Exploitation", "Legal Violation",
+							"Defamatory", "Adult Content", "Harmful", "etc.", "Back"};
+
+	int rep_count = 9;
+	unsigned char key[2] = { 0,0 };
+	Rep_data temp;
+
+	Point p = { 0, 0 };
+
+	system("cls");
+	draw_box();
+	draw_title(set_language ? "신고" : "REPORT");
+
+	while (TRUE) {
+		p.x = (int)X_MAX * 0.18, p.y = (int)Y_MAX / 3;
+		gotoxy(p.x, p.y);
+		for (int i = 0; i < rep_count; i++, p.x += 20) {
+			if (i != 0 && i % 4 == 0) p.y += 2, p.x = (int)X_MAX * 0.18;
+			gotoxy(p.x, p.y);
+			print_choice_lang(kor_report[i], eng_report[i], i == sel_report);
+		}
+		key[0] = _getch();
+		if (key[0] == K_ARROW) {
+			key[1] = _getch();
+			switch (key[1]) {
+			case K_RIGHT:
+				sel_report = sel_report == rep_count - 1 ? rep_count - 1 : sel_report + 1;
+				break;
+			case K_LEFT:
+				sel_report = sel_report == 0 ? 0 : sel_report - 1;
+				break;
+			case K_UP:
+				sel_report = sel_report - 4 < 0 ? sel_report : sel_report - 4;
+				break;
+			case K_DOWN:
+				sel_report = sel_report + 4 > rep_count - 1 ? sel_report : sel_report + 4;
+				break;
+			}
+		}
+		else {
+			switch (key[0]) {
+			case 'd':
+			case 'D':
+				sel_report = sel_report == rep_count - 1 ? rep_count - 1 : sel_report + 1;
+				break;
+			case 'a':
+			case 'A':
+				sel_report = sel_report == 0 ? 0 : sel_report - 1;
+				break;
+			case 'w':
+			case 'W':
+				sel_report = sel_report - 4 < 0 ? sel_report : sel_report - 4;
+				break;
+			case 's':
+			case 'S':
+				sel_report = sel_report + 4 > rep_count - 1 ? sel_report : sel_report + 4;
+				break;
+			case K_ENTER:
+				system("cls");
+				if (sel_report == rep_count - 1) return old_report;
+				temp.reason = sel_report;
+				temp.UID = UID;
+				input_blank_some(set_language ? "신고 사유" : "Report reason", temp.comment, sizeof(temp.comment));
+				update_repData(temp, AID);
+				return sel_report;
+			}
+		}
+	}
+	
+}
+char* output_report(char report) {
+	char* kor_report[8] = { "사기", "망가짐", "아동 학대", "법률 위반", "명예 훼손",
+							"성인물", "해로움", "기타" };
+	char* eng_report[8] = { "Fraud", "Broken", "Child Exploitation", "Legal Violation",
+							"Defamatory", "Adult Content", "Harmful", "etc." };
+	return set_language ? kor_report[report] : eng_report[report];
 }
 
 int set_money() {

@@ -1,6 +1,8 @@
 ﻿// 큰 범위로 그리는 함수들
 // Ex ) 프로그램 틀, 타이틀, 메시지 등
 
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include <Windows.h>
 #include <conio.h>
@@ -125,6 +127,13 @@ void draw_seller_page() {
 		else choice_color(black, lightGray, eng_page[i]);
 		if (i != 2) choice_color(black, lightGray, "  ");
 	}
+}
+
+void draw_ESC() {
+	Point p = { 2, 1 };
+	gotoxy(p.x, p.y);
+	choice_color(lightRed, lightGray, "ESC ");
+	choice_color(black, lightGray, set_language ? "뒤로가기" : "Back");
 }
 
 void draw_button(Point p, char* str) {
@@ -362,6 +371,60 @@ bool popup_review(char* msg, float rate) {
 	p.x = X_MAX / 2.5,  p.y = Y_MAX / 1.8;
 	gotoxy(p.x, p.y);
 	printf("%s : %.1f", set_language ? "평점" : "Rate", rate);
+
+	while (1) {
+		p.x = X_MAX / 2 - 7;
+		p.y = Y_MAX / 1.6 + 1;
+		for (int i = 0; i < 2; i++, p.x += 8) {
+			gotoxy(p.x, p.y);
+			print_choice_lang(str_k[i], str_e[i], select == i);
+		}
+
+		key[0] = _getch();
+		if (key[0] == K_ARROW) {
+			key[1] = _getch();
+			switch (key[1]) {
+			case K_LEFT:
+				select = 0;
+				break;
+			case K_RIGHT:
+				select = 1;
+				break;
+			}
+		}
+		switch (key[0]) {
+		case 'a':
+		case 'A':
+			select = 0;
+			break;
+		case 'd':
+		case 'D':
+			select = 1;
+			break;
+		case K_ENTER:
+			system("cls");
+			return select ? true : false;
+		}
+	}
+	// 에러 처리
+}
+bool popup_report(short reason) {
+	system("cls");
+	draw_box();
+	draw_title(set_language ? "확인 팝업" : "Check Popup");
+	char* str_k[2] = { "뒤로", "변경" };
+	char* str_e[2] = { "Back", "Change" };
+	Point p = { 0, 0 };
+	char msg[40];
+	strcpy(msg, set_language ? "신고 사유 : " : "Report reason : ");
+	strcat(msg, output_report(reason));
+
+	unsigned char key[2] = { 0, 0 };
+	int select = 0;
+
+
+	p.x = X_MAX * 0.5 - strlen(msg) * 0.5, p.y = Y_MAX * 0.5;
+	draw_button(p, msg);
 
 	while (1) {
 		p.x = X_MAX / 2 - 7;
