@@ -157,6 +157,9 @@ bool is_report_write(short AID, short UID);
 int is_exit_who(char* id, short quest, char* answer, int(*func)(char* id, short quest, char* answer));
 int is_exit_id(char* id, short quest, char* answer);
 int is_exit_id_seller(char* id, int quest, char* answer);
+// 검색이 있나요? [ -1 없어요 / AID = 있어요 ]
+short is_search(char* msg);
+short is_user_search(char* msg);
 // ID 반환 함수
 // 출력 : ID
 // get_UID = 유저 / get_SID = 판매자

@@ -484,8 +484,7 @@ void update_repData(Rep_data RD, short AID) {
 			for (int i = 0; i < 10; i++) {
 				if (temp->repData[i].UID == -1 || temp->repData[i].UID == RD.UID) {
 					temp->repData[i] = RD;
-					temp->is_disable = true;
-					temp->is_report = false;
+					temp->is_report = true;
 					save_application_file();
 					return;
 				}

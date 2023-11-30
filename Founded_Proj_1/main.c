@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <urlmon.h> // URLDOWNLOAD
 #include <conio.h>
+#include <stdbool.h>
 
 #include "source.h"
 #include "word_define.h"
@@ -9,7 +9,7 @@ int main() {
 	int select = 0;
 	int page = 0;
 	int uid = 0;
-	bool flag = TRUE;
+	bool flag = true;
 	PNS pns;
 
 	make_temp_folder();

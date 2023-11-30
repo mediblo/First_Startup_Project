@@ -18,6 +18,7 @@
 #define K_F1 59
 #define K_F2 60
 #define K_F3 61
+#define K_F8 66
 
 // 좌표설정에 용이하기 위해 제작한 포인트 구조체
 typedef struct {
@@ -77,7 +78,7 @@ typedef struct user{
 	int money; // 돈
 	short prog_count; // 프로그램 갯수
 	bool lang; // 언어 설정 true = kor / false = eng
-	AID_D* appData;
+	AID_D* appData; // 보유 앱 정보
 	struct user* next; // 연결리스트
 } User;
 

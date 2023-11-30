@@ -203,6 +203,21 @@ bool is_write_review(short UID, short AID) {
 			return true;
 	return false;
 }
+short is_search(char* msg) {
+	for (App* temp = root_app; temp != NULL; temp = temp->next) {
+		char* temp_name = temp->lang_set == 0 ? (set_language ? temp->kor_name : temp->eng_name) : (temp->lang_set == 1 ? temp->kor_name : temp->eng_name);
+		if ((strstr(temp_name, msg) != NULL ) && !temp->is_disable)
+			return temp->AID;
+	}
+	return -1;
+}
+short is_user_search(char* msg) {
+	for (AID_D* temp = root_AID_D; temp != NULL; temp = temp->next) {
+		if ((strstr(temp->AD.name, msg) != NULL))
+			return temp->AD.AID;
+	}
+	return -1;
+}
 ///////////////////////////관리자 버전 함수들////////////
 int is_admin(Account ac) {
 	static char count = 0;

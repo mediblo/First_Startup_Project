@@ -11,6 +11,7 @@
 
 int compare(const void* a, const void* b);
 void library_page_setting();
+int library_search_page(short UID);
 
 int library_page(short UID) {
 	AData temp_AD[5];
@@ -111,6 +112,11 @@ int library_page(short UID) {
 			case K_F3:
 				page = key[1] - K_F1;
 				break;
+			case K_F8:
+				library_search_page(UID);
+				system("cls");
+				library_page_setting();
+				break;
 			case K_DOWN:
 				sel = sel == temp_num - 1 ? temp_num - 1 : sel + 1;
 				break;
@@ -172,6 +178,87 @@ int library_page(short UID) {
 	}
 	return page;
 }
+
+int library_search_page(short UID) {
+	Point p;
+
+	char msg[20];
+	short AID, sel = 0;
+	AData temp_AD;
+	bool is_hav = false, flag = true;
+	unsigned char key[2] = { 0,0 };
+	char* kor_app_sel[3] = { "리뷰", "다운", "추가" };
+	char* eng_app_sel[3] = { "Review", "Download", "Increased" };
+	int chk_url = 0;
+
+	input_some("검색 문장", msg);
+
+	AID = is_user_search(msg);
+	if (AID == -1) {
+		draw_message(set_language ? "검색 결과 : 없음" : "Search Results : NULL");
+		return;
+	}
+
+	draw_ESC();
+	draw_box();
+	if (set_language) draw_title("라이브러리 페이지");
+	else draw_title("LIBRARY PAGE");
+	p.x = X_MAX / 1.7, p.y = Y_MAX / 2.3;
+	Point p2 = { p.x + 19, p.y + 4 };
+	draw_lil_box(p, p2);
+
+	for (AID_D* temp = root_AID_D; temp != NULL; temp = temp->next) {
+		if (temp->UID == UID) {
+			strcpy(temp_AD.name, temp->AD.name);
+			strcpy(temp_AD.explanation, temp->AD.explanation);
+			temp_AD.AID = temp->AD.AID;
+			temp_AD.price = temp->AD.price;
+			break;
+		}
+	}
+
+	// 설명창 인식
+	// 기존 설명창 제거
+	p.x = X_MAX / 1.7, p.y = Y_MAX / 2.3;
+	gotoxy(p.x, p.y);
+	for (int i = 0; i < 100; i++) {
+		printf(" ");
+		if ((i + 1) % 20 == 0) gotoxy(p.x, ++p.y);
+	}
+	p.x = X_MAX / 1.7, p.y = Y_MAX / 2.3;
+	gotoxy(p.x, p.y); // sel -> 무언가로 변경해야함 [ 그대로 하기로 함 ]
+	for (int i = 0; temp_AD.explanation[i] != '\0'; i++) {
+		printf("%c", temp_AD.explanation[i]);
+		if ((i + 1) % 20 == 0) gotoxy(p.x, ++p.y);
+	}
+	p.x = X_MAX / 1.7, p.y = Y_MAX / 1.5;
+	gotoxy(p.x, p.y++); // 다운 가능한 카운트로 변경할 것
+	printf("%s : %03d", set_language ? "다운 가능 횟수" : "Download Limit", temp_AD.price);
+
+	while (flag) {
+		p.x = X_MAX / 7, p.y = Y_MAX / 4;
+		gotoxy(p.x, p.y);
+		printf("%s", temp_AD.name);
+
+		key[0] = _getch();
+		if (key[0] == K_ARROW || key[0] == 0)
+			key[1] = _getch();
+		else {
+			switch (key[0]) {
+			case K_ESC:
+				flag = false;
+				break;
+			case K_ENTER:
+				app_page(UID, temp_AD);
+				library_page_setting();
+				flag = false;
+				break;
+			}
+		}
+	}
+
+}
+
 // 기본 UI 출력
 void library_page_setting() {
 	Point p;
