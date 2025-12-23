@@ -48,17 +48,12 @@
     - `screen.c`: 콘솔 화면 그리기 및 레이아웃 처리.
     - `view_page.c`: 각 페이지별 화면 출력 로직.
 
-## 💻 설치 및 실행 방법
+## 💻 실행 방법
 
-1. **프로젝트 클론 또는 다운로드**
-   ```bash
-   git clone [Repository URL]
-   ```
-
-2. **Visual Studio에서 열기**
+1. **Visual Studio에서 열기**
    - `Founded_Proj_1.sln` 파일을 Visual Studio 솔루션 탐색기에서 엽니다.
 
-3. **빌드 및 실행**
+2. **빌드 및 실행**
    - 솔루션 구성(Solution Configuration)을 `Debug` 또는 `Release`로 설정합니다.
    - `Ctrl + F5`를 눌러 빌드하고 실행합니다.
 
